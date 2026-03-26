@@ -1,0 +1,156 @@
+.item__header{
+    display: flex;
+    align-items: center;
+    gap:20px;
+    padding: 10px 20px;
+
+    &--stt{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #9ac0f3;
+        color: #fff;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    &--des{
+        flex:1;
+
+        &--title{
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        &--session{
+            display: flex;
+            gap:30px;
+            font-size: 16px;
+            font-weight: 400;
+        }
+    }
+}
+
+.items__session{
+    border-top: 1px solid #ddd;
+    padding: 20px;
+}
+
+
+
+.item:hover{
+    cursor: pointer;
+    background-color: #ddd;
+}
+
+.item{
+    border-radius: 10px;
+    padding: 5px 10px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+
+    &__tittle--sub{
+        font-size: 16px;
+        font-weight: 500;
+    }
+}
+
+.miniTest{
+    border: 1px solid #b8dce2;
+    padding:22px 24px 22px 58px;
+    border-radius:10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: white;
+}
+.miniTestStudent{
+    border: 1px solid #b8dce2;
+    padding:22px 37px 22px 58px;
+    border-radius:10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.miniTestStudent:hover{
+    cursor: pointer;
+}
+
+.miniTest:hover{
+    cursor: pointer;
+    transform: translateY(-4px); /* nổi lên một chút */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15); /* bóng đổ */
+}
+
+.miniTest1{
+    border: 1px solid #b8dce2;
+    padding:22px 24px 22px 58px;
+    border-radius:10px;
+}
+.miniTest1:hover{
+    cursor: pointer;
+}
+
+/* ===============================
+   RESPONSIVE - BỔ SUNG (FIX)
+   =============================== */
+
+/* 📱 Tablet & Mobile */
+@media (max-width: 768px) {
+
+  /* 🔴 GIỮ 1 HÀNG */
+  .item__header {
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+
+  /* 🔴 GIỮ STT LUÔN TRÒN */
+  .item__header--stt {
+    width: 56px;
+    height: 56px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* 🔴 MÔ TẢ CO GIÃN */
+  .item__header--des {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* 🔴 TITLE NHỎ LẠI */
+  .item__header--des--title {
+    font-size: 16px;
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  /* 🔴 SESSION CÓ THỂ XUỐNG DÒNG */
+  .item__header--des--session {
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 14px;
+  }
+
+  /* 🔴 CUP KHÔNG ÉP XUỐNG HÀNG RIÊNG */
+  .item__header--cup {
+    flex-shrink: 0;
+  }
+}
+
+/* 📱 Mobile nhỏ */
+@media (max-width: 480px) {
+
+  .item__header--stt {
+    width: 48px;
+    height: 48px;
+    font-size: 16px;
+  }
+
+  .item__header--des--session {
+    font-size: 13px;
+  }
+}

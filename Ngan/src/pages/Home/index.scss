@@ -1,0 +1,132 @@
+.content{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.form__login{
+    border: 1px solid #ddd;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    width: 40%;
+    min-height: auto;
+
+    &--title{
+        display: flex;
+        font-size: 18px;
+        margin-bottom: 10px;
+        font-weight: 700;
+        justify-content: center;
+        margin-top: 8px;
+    }
+
+    &--item{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 40px;
+        margin-bottom: 10px;
+
+        &--title{
+            font-weight: 450;
+        }
+    }
+
+    &--input{
+        width: 70%;
+        margin-bottom: 0;
+    }
+
+}
+.button{
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+    height: 32px;
+}
+
+.font700_20{
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.font20{
+    font-size: 20px;
+    color: #535050;
+    margin-bottom: 10px;
+}
+
+.font700_16{
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.font16{
+    font-size: 16px;
+    color: #535050;
+    margin-bottom: 10px;
+}
+
+.font64{
+    font-size: 64px;
+    font-weight: 600;
+    color: white;
+}
+
+.font500_22{
+    font-size: 22px;
+    font-weight: 500;
+    color: white;
+}
+
+.ENVI{
+    height: 40px;
+    padding: 0 12px;
+    align-content: center;
+    border: 1px solid #ddd;
+    background-color: #ddd;
+    border-radius: 15px;
+}
+
+.tl{
+    height: 30px;
+    padding: 0 12px;
+    align-content: center;
+    border: 1px solid #ddd;
+    background-color: #0071f9;
+    border-radius: 15px;
+    color: white;
+}
+
+.search-box .ant-input{
+    height: 60px !important;
+}
+
+.search-box button{
+    height: 59.5px !important;
+    width: 50px !important;
+}
+
+.nghia{
+    justify-self: center;
+    margin-top:40px;
+    width: 70%;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    padding: 0 20px;
+    background-color: white;
+}
+
+.marginTop20{
+    margin-top:20px;
+}
+
+.border{
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 15px 50px;
+    background-color: white;
+    min-height: 400px;
+    justify-self: center;
+}

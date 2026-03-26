@@ -1,0 +1,74 @@
+[
+    {
+        "ID": 1,
+        "UserID": 3,
+        "TargetScore": 800,
+        "DailyStudyMinutes": 60,
+        "GoalDate": "2024-12-01",
+        "PlacementLevel": "B2",
+        "LastActiveAt": "2024-10-01"
+    },
+    {
+        "ID": 2,
+        "UserID": 4,
+        "TargetScore": 750,
+        "DailyStudyMinutes": 45,
+        "GoalDate": "2024-12-15",
+        "PlacementLevel": "B1",
+        "LastActiveAt": "2024-09-28"
+    },
+    {
+        "ID": 3,
+        "UserID": 5,
+        "TargetScore": 600,
+        "DailyStudyMinutes": 30,
+        "GoalDate": "2024-12-20",
+        "PlacementLevel": "A2",
+        "LastActiveAt": "2024-09-20"
+    },
+    {
+        "ID": 4,
+        "UserID": 6,
+        "TargetScore": 850,
+        "DailyStudyMinutes": 90,
+        "GoalDate": "2025-01-10",
+        "PlacementLevel": "C1",
+        "LastActiveAt": "2024-10-10"
+    },
+    {
+        "ID": 5,
+        "UserID": 7,
+        "TargetScore": 900,
+        "DailyStudyMinutes": 120,
+        "GoalDate": "2025-02-01",
+        "PlacementLevel": "C1",
+        "LastActiveAt": "2024-10-15"
+    },
+    {
+        "ID": 6,
+        "UserID": 8,
+        "TargetScore": 700,
+        "DailyStudyMinutes": 40,
+        "GoalDate": "2025-01-01",
+        "PlacementLevel": "B1",
+        "LastActiveAt": "2024-10-05"
+    },
+    {
+        "ID": 7,
+        "UserID": 2,
+        "TargetScore": 990,
+        "DailyStudyMinutes": 180,
+        "GoalDate": "2025-03-01",
+        "PlacementLevel": "C2",
+        "LastActiveAt": "2024-10-20"
+    },
+    {
+        "ID": 8,
+        "UserID": 1,
+        "TargetScore": 990,
+        "DailyStudyMinutes": 200,
+        "GoalDate": "2025-03-15",
+        "PlacementLevel": "C2",
+        "LastActiveAt": "2024-10-25"
+    }
+]

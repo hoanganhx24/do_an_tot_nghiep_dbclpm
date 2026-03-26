@@ -1,0 +1,36 @@
+.button__create{
+    margin-bottom: 20px;
+}
+
+.form__teacher{
+    margin: 0 50px;
+
+    &--item{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 40px;
+
+        &--label{
+            font-weight: 450;
+        }
+    }
+
+    &--button{
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    &--input{
+        width: 70%;
+    }
+}
+
+.white-space{
+    white-space: nowrap;
+}
+.no--margin--bottom{
+    margin-bottom: 0 !important;
+}

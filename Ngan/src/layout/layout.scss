@@ -1,0 +1,152 @@
+.header{
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+    padding: 0 40px 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.footer{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.sider{
+    background-color: #fff;
+    position: fixed;
+    top: 63px;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    height: 100%;
+}
+
+.layout__content{
+    padding: 20px 40px;
+    background-color: #fff;
+}
+
+.admin .layout__content{
+  background: linear-gradient(
+  to bottom right,
+  #EFF6FF,   /* blue-50 */
+  #FFFFFF,  /* white */
+  #E0E7FF    /* indigo-100 */
+);
+
+}
+
+.layout__content2{
+    padding: 20px 40px;
+    padding-bottom: 0 !important;
+    background-color: #fff;
+}
+
+.center{
+    align-content: center;
+}
+
+.borderTest{
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 15px 50px;
+    background-color: #ddd;
+    margin-top: 10px;
+}
+
+.first-item{
+    background-color: white;
+}
+
+/* menu-sider-admin.scss */
+
+.admin .ant-menu {
+  background: #ffffff !important;
+  border-right: none;
+  padding-top: 8px;
+}
+
+.admin .ant-menu-item {
+  margin: 6px 8px !important;
+  border-radius: 8px;
+  height: 44px;
+  line-height: 44px;
+  font-weight: 500;
+  color: #4879bd !important;
+  width: 90% !important;
+}
+
+.admin .ant-menu-item-selected {
+  background: #bad2ff !important;
+  color: #2050ad !important;
+}
+
+.admin .ant-menu-item-selected .anticon {
+  color: #2050ad !important;
+}
+
+.admin .ant-menu-item:hover {
+  background: #bad2ff !important;
+  color: #2050ad !important;
+}
+
+.admin .ant-menu-item .anticon {
+  font-size: 18px;
+}
+
+.ant-table {
+  border-radius: 16px !important;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15)
+}
+
+.ant-table-thead > tr > th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #334155;
+}
+
+.ant-table-thead .ant-table-cell{
+  text-align: center!important;
+}
+
+.ant-table-tbody > tr > td {
+  background: #ffffff;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #f1f5f9;
+}
+
+.admin {
+    background-color: #EFF6FF;
+}
+
+.admin .ant-layout-sider-children .ant-menu{
+    background-color: #EFF6FF !important;
+}
+
+.page-title {
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(
+    90deg,
+    #4965e1,
+    #334dce
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

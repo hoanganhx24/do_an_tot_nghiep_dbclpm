@@ -1,0 +1,110 @@
+.course {
+  position: relative;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #fff;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &__image {
+    width: 100%;
+    height: 150px;
+    aspect-ratio: 4/3; // hiển thị rộng 4 cao 3
+    object-fit: cover; // vừa với box hiện tại
+    transition: opacity 0.3s ease;
+  }
+
+  &__title {
+    margin: 10px;
+    padding: 0 10px;
+    transition: opacity 0.3s ease;
+
+    &--main {
+      font-weight: 700;
+      font-size: 20px;
+    }
+  }
+
+  &__description {
+    margin-top: 10px;
+    transition: opacity 0.3s ease;
+  }
+
+  // Nút "Xem chi tiết"
+  &__button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(57, 57, 57, 0.4);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+  }
+
+  &:hover {
+    .course__image,
+    .course__title,
+    .course__description {
+      opacity: 0.3;
+    }
+
+    &::before {
+      opacity: 1;
+    }
+    
+    .course__button {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}
+
+.form__course{
+    margin: 0 50px;
+
+    &--item{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 40px;
+
+        &--label{
+            font-weight: 450;
+            width: 100px;
+        }
+    }
+
+    &--button{
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    &--input{
+        flex: 1;
+        margin-left: 20px;
+    }
+}
+span.ant-upload-wrapper.css-dev-only-do-not-override-1cj4ms{
+  display: flex !important;
+  gap: 10px !important;
+}

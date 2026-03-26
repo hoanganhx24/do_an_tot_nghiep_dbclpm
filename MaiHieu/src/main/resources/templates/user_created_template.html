@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Tài khoản đã được tạo thành công</title>
+    <style>
+        body {
+            background-color: #f5f6fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #4f70e8;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .content {
+            padding: 30px 25px;
+            line-height: 1.6;
+        }
+        .password-box {
+            background-color: #eef3ff;
+            border: 2px dashed #4f70e8;
+            color: #2a3ea0;
+            font-weight: bold;
+            text-align: center;
+            font-size: 22px;
+            letter-spacing: 3px;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4f70e8;
+            color: #fff !important;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            margin-top: 15px;
+        }
+        .footer {
+            background-color: #fafafa;
+            text-align: center;
+            font-size: 13px;
+            color: #777;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Tài khoản của bạn đã được tạo thành công</h1>
+    </div>
+
+    <div class="content">
+        <p>Xin chào,</p>
+
+        <p>
+            Tài khoản của bạn đã được tạo thành công với địa chỉ email:
+            <strong th:text="${email}">example@email.com</strong>.
+        </p>
+
+        <p>Mật khẩu đăng nhập của bạn là:</p>
+        <div class="password-box" th:text="${password}">******</div>
+
+        <p>Bạn có thể đăng nhập tại trang sau:</p>
+        <p><a th:href="${loginUrl}" class="button">Đăng nhập ngay</a></p>
+
+        <p>Nếu bạn không yêu cầu tạo tài khoản này, vui lòng bỏ qua email.</p>
+
+        <p>Trân trọng,<br><strong>Đội ngũ hỗ trợ hệ thống</strong></p>
+    </div>
+
+    <div class="footer">
+        © <span th:text="${year}">2025</span> - Hệ thống quản lý của bạn. Mọi quyền được bảo lưu.
+    </div>
+</div>
+
+</body>
+</html>

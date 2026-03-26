@@ -1,0 +1,42 @@
+[
+    {
+        "ID": 1,
+        "Value": "Admin",
+        "Description": "Quản trị hệ thống"
+    },
+    {
+        "ID": 2,
+        "Value": "Teacher",
+        "Description": "Giáo viên tạo đề và câu hỏi"
+    },
+    {
+        "ID": 3,
+        "Value": "Student",
+        "Description": "Học viên luyện thi"
+    },
+    {
+        "ID": 4,
+        "Value": "Moderator",
+        "Description": "Kiểm duyệt nội dung"
+    },
+    {
+        "ID": 5,
+        "Value": "Guest",
+        "Description": "Người dùng chưa đăng ký"
+    },
+    {
+        "ID": 6,
+        "Value": "Support",
+        "Description": "Hỗ trợ kỹ thuật"
+    },
+    {
+        "ID": 7,
+        "Value": "Manager",
+        "Description": "Quản lý khóa học"
+    },
+    {
+        "ID": 8,
+        "Value": "ContentCreator",
+        "Description": "Người tạo nội dung bài học"
+    }
+]

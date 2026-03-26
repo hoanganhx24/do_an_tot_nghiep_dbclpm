@@ -1,0 +1,46 @@
+.sentence-builder {
+  min-width: 800px;
+  margin: 20px auto;
+  font-family: sans-serif;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.sb-bank {
+    width: 100%;
+  background: white;
+  margin-bottom: 20px;
+}
+
+.sb-sentence {
+  background: white;
+}
+
+.sb-word-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.sb-word {
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: white;
+  border: 1px solid #ccc;
+  cursor: grab;
+  user-select: none;
+  align-content: center;
+}
+
+.sb-word-in-sentence {
+  background: #fffbe6;
+}
+
+.sb-current-sentence {
+  margin-top: 12px;
+  padding: 8px;
+  border-top: 1px dashed #ccc;
+  font-style: italic;
+}

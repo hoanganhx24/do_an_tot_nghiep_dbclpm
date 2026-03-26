@@ -1,0 +1,185 @@
+.flex{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.font500{
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.margin15{
+    margin:15px 0;
+}
+
+.flex1{
+    display: flex;
+    align-items: center;
+    gap:10px;
+}
+.flex2{
+    display: flex;
+    justify-content: center;
+    gap:10px;
+}
+
+.flex3{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    gap:30px;
+    height: 700px;
+    width: 60%;
+    z-index: 100;
+}
+
+.ant-breadcrumb-separator{
+    align-self: center;
+}
+
+.hidden-scrollbar {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE, Edge cũ */
+}
+
+.hidden-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.backgroundStudy{
+    background: linear-gradient(
+    to bottom,
+    #007bff 60%,
+    #b3d9ff 100%
+  );
+}
+
+.backgroundStudySider{
+    background: linear-gradient(
+    to bottom,
+    #007bff 50%,
+    #b3d9ff 100%
+  );
+  border:1px solid #9cccfdff;
+}
+
+.errorMessage{
+  color: red;
+}
+
+
+
+/* Container đặt trên cùng */
+.input-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Input email nhỏ hơn */
+.email-input {
+  border-radius: 6px 0 0 6px !important;
+  height: 32px !important;               /* 👇 chiều cao mới */
+  padding: 4px 10px !important;
+  font-size: 13px;
+}
+
+/* Button verify */
+.verify-btn {
+  background-color: #1677ff;
+  color: white;
+  border: none;
+  padding: 0 12px;
+  height: 32px;                           /* 👇 chiều cao khớp input */
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.verify-btn:hover {
+  opacity: 0.9;
+}
+.email-wrapper{
+  margin: 0;
+  align-content: center;
+}
+
+/* Bo margin lỗi */
+.email-wrapper .ant-form-item-explain-error {
+  margin-left: 4px;
+}
+
+.modalTest .ant-modal-content {
+  width: 750px;
+}
+
+.cursor:hover{
+  cursor: pointer;
+  color: #99c7f9;
+}
+
+.whitespace{
+  white-space: nowrap;
+}
+
+.ql-align-right {
+  text-align: right;
+}
+
+.ql-align-center {
+  text-align: center;
+}
+
+.ql-align-justify {
+  text-align: justify;
+}
+
+.ql-size-small {
+  font-size: 0.75rem !important;
+}
+
+.ql-size-large {
+  font-size: 1.5rem !important;
+}
+
+.ql-size-huge {
+  font-size: 2.5rem !important;
+}
+
+.footer-button{
+  border-top: 1px solid #ddd;
+    height: 75px;
+    align-self: center;
+    justify-self: center;
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    background-color: white;
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+
+.white{
+  color: white;
+}
+
+.ant-upload-wrapper.css-dev-only-do-not-override-198drv2{
+  display: flex;
+  gap: 10px;
+}
+
+.marginTop50{
+  margin-top: 50px;
+}
+
+h1, h2, h3, h4, h5{
+  margin: 10px 0;
+}

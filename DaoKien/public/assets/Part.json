@@ -1,0 +1,136 @@
+[
+    {
+        "id": 1,
+        "title": "Part 1: Mô tả tranh",
+        "questions": 6,
+        "description": "Chọn mô tả đúng nhất cho bức ảnh được cho.",
+        "types": [
+            "Tranh tả người",
+            "Tranh tả cả người và vật"
+        ]
+    },
+    {
+        "id": 2,
+        "title": "Part 2: Hỏi - Đáp",
+        "questions": 25,
+        "description": "Nghe câu hỏi và chọn câu trả lời phù hợp nhất.",
+        "types": [
+            "Câu hỏi WHAT",
+            "Câu hỏi WHO",
+            "Câu hỏi WHERE",
+            "Câu hỏi WHEN",
+            "Câu hỏi HOW",
+            "Câu hỏi WHY",
+            "Câu hỏi YES/NO",
+            "Câu hỏi đuôi",
+            "Câu hỏi lựa chọn",
+            "Câu yêu cầu, đề nghị",
+            "Câu trần thuật"
+        ]
+    },
+    {
+        "id": 3,
+        "title": "Part 3: Đoạn hội thoại ngắn",
+        "questions": 39,
+        "description": "Nghe các đoạn hội thoại ngắn và trả lời câu hỏi.",
+        "types": [
+            "Câu hỏi về chủ đề, mục đích",
+            "Câu hỏi về danh tính người nói",
+            "Câu hỏi chi tiết cuộc hội thoại",
+            "Câu hỏi về hành động tương lai",
+            "Câu hỏi kết hợp bảng biểu",
+            "Câu hỏi về hàm ý câu nói",
+            "Chủ đề: Company - General Office Work",
+            "Chủ đề: Company - Business, Marketing",
+            "Chủ đề: Company - Event, Project",
+            "Chủ đề: Company - Facility",
+            "Chủ đề: Shopping, Service",
+            "Chủ đề: Order, Delivery",
+            "Chủ đề: Housing",
+            "Chủ đề: Điện thoại",
+            "Câu hỏi yêu cầu, gọi ý"
+        ]
+    },
+    {
+        "id": 4,
+        "title": "Part 4: Bài nói ngắn",
+        "questions": 30,
+        "description": "Nghe các đoạn thông báo, bài nói và chọn câu trả lời đúng.",
+        "types": [
+            "Câu hỏi về chủ đề, mục đích",
+            "Câu hỏi về danh tính, địa điểm",
+            "Câu hỏi về chi tiết",
+            "Câu hỏi về hành động tương lai",
+            "Câu hỏi về hàm ý câu nói",
+            "Dạng bài: Telephone message - Tin nhắn thoại",
+            "Dạng bài: Advertisement - Quảng cáo",
+            "Dạng bài: Announcement - Thông báo",
+            "Dạng bài: Talk - Bài phát biểu, diễn văn",
+            "Dạng bài: Excerpt from a meeting - Trích dẫn từ buổi họp",
+            "Câu hỏi yêu cầu, gợi ý"
+        ]
+    },
+    {
+        "id": 5,
+        "title": "Part 5: Câu chưa hoàn chỉnh",
+        "questions": 30,
+        "description": "Chọn từ hoặc cụm từ đúng để hoàn thành câu.",
+        "types": [
+            "Câu hỏi từ loại",
+            "Câu hỏi từ vựng",
+            "Ngữ pháp: Danh từ",
+            "Ngữ pháp: Đại từ",
+            "Ngữ pháp: Tính từ",
+            "Ngữ pháp: Thì",
+            "Ngữ pháp: Trạng từ",
+            "Ngữ pháp: Động từ nguyên mẫu có to",
+            "Ngữ pháp: Động từ nguyên mẫu không to",
+            "Ngữ pháp: Phân từ và Cấu trúc phân từ",
+            "Ngữ pháp: Liên từ",
+            "Ngữ pháp: Mệnh đề quan hệ"
+        ]
+    },
+    {
+        "id": 6,
+        "title": "Part 6: Hoàn thành đoạn văn",
+        "questions": 16,
+        "description": "Hoàn thành đoạn văn bằng cách chọn đáp án thích hợp.",
+        "types": [
+            "Câu hỏi từ loại",
+            "Câu hỏi ngữ pháp",
+            "Câu hỏi từ vựng",
+            "Câu hỏi điền câu vào đoạn văn",
+            "Hình thức: Thư điện tử/Thư tay (Email/Letter)",
+            "Hình thức: Quảng cáo (Advertisement)",
+            "Hình thức: Thông báo/Thông tin nội bộ (Notice/Memo)",
+            "Ngữ pháp: Danh từ",
+            "Ngữ pháp: Tính từ",
+            "Ngữ pháp: Thì",
+            "Ngữ pháp: Trạng từ",
+            "Ngữ pháp: Liên từ",
+            "Ngữ pháp: Động từ nguyên mẫu",
+            "Ngữ pháp: Cấu trúc câu ghép"
+        ]
+    },
+    {
+        "id": 7,
+        "title": "Part 7: Đọc hiểu",
+        "questions": 54,
+        "description": "Đọc các đoạn văn và trả lời câu hỏi.",
+        "types": [
+            "Câu hỏi tìm thông tin",
+            "Câu hỏi chi tiết sai đúng",
+            "Câu hỏi về chủ đề, mục đích",
+            "Câu hỏi về hàm ý câu",
+            "Dạng bài: Đơn đoạn",
+            "Dạng bài: Nhiều đoạn",
+            "Dạng bài: Email/Letter - Thư điện tử/Thư tay",
+            "Dạng bài: Form - Biểu mẫu",
+            "Dạng bài: Review - Bài đánh giá",
+            "Dạng bài: Advertisement - Quảng cáo",
+            "Dạng bài: Notice - Thông báo",
+            "Dạng bài: Text message - Chuỗi tin nhắn",
+            "Dạng bài: Menu - Danh sách/Thực đơn"
+        ]
+    }
+]

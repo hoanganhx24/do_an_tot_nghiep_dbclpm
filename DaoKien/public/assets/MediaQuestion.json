@@ -1,0 +1,50 @@
+[
+    {
+        "ID": 1,
+        "AudioUrl": "audio/part1_q1.mp3",
+        "ImageUrl": "images/part1_img1.jpg",
+        "Script": "A man is riding a bike."
+    },
+    {
+        "ID": 2,
+        "AudioUrl": "audio/part2_q1.mp3",
+        "ImageUrl": null,
+        "Script": "Where is the nearest bank?"
+    },
+    {
+        "ID": 3,
+        "AudioUrl": "audio/part3_q1.mp3",
+        "ImageUrl": null,
+        "Script": "Two people talking about a meeting."
+    },
+    {
+        "ID": 4,
+        "AudioUrl": "audio/part4_q1.mp3",
+        "ImageUrl": null,
+        "Script": "A man giving a weather forecast."
+    },
+    {
+        "ID": 5,
+        "AudioUrl": null,
+        "ImageUrl": null,
+        "Script": "Choose the correct word to fill in the blank."
+    },
+    {
+        "ID": 6,
+        "AudioUrl": null,
+        "ImageUrl": null,
+        "Script": "Fill in the blanks in the email."
+    },
+    {
+        "ID": 7,
+        "AudioUrl": null,
+        "ImageUrl": null,
+        "Script": "Read the passage and answer questions."
+    },
+    {
+        "ID": 8,
+        "AudioUrl": null,
+        "ImageUrl": null,
+        "Script": "Choose the correct verb tense."
+    }
+]

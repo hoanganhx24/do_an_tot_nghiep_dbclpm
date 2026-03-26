@@ -1,0 +1,74 @@
+[
+    {
+        "ID": 1,
+        "StudentProfileID": 1,
+        "StartedAt": "2024-10-01T08:15:23",
+        "SubmittedAt": "2024-10-01T09:05:47",
+        "ScorePercent": 85,
+        "ScoreReading": 420,
+        "ScoreListening": 410
+    },
+    {
+        "ID": 2,
+        "StudentProfileID": 2,
+        "StartedAt": "2024-10-02T07:50:12",
+        "SubmittedAt": "2024-10-02T08:45:31",
+        "ScorePercent": 75,
+        "ScoreReading": 380,
+        "ScoreListening": 370
+    },
+    {
+        "ID": 3,
+        "StudentProfileID": 3,
+        "StartedAt": "2024-10-03T09:10:00",
+        "SubmittedAt": "2024-10-03T10:00:20",
+        "ScorePercent": 60,
+        "ScoreReading": 300,
+        "ScoreListening": 310
+    },
+    {
+        "ID": 4,
+        "StudentProfileID": 4,
+        "StartedAt": "2024-10-04T10:25:45",
+        "SubmittedAt": "2024-10-04T11:15:30",
+        "ScorePercent": 90,
+        "ScoreReading": 450,
+        "ScoreListening": 440
+    },
+    {
+        "ID": 5,
+        "StudentProfileID": 5,
+        "StartedAt": "2024-10-05T14:05:18",
+        "SubmittedAt": "2024-10-05T14:55:42",
+        "ScorePercent": 95,
+        "ScoreReading": 480,
+        "ScoreListening": 470
+    },
+    {
+        "ID": 6,
+        "StudentProfileID": 6,
+        "StartedAt": "2024-10-06T08:35:07",
+        "SubmittedAt": "2024-10-06T09:20:49",
+        "ScorePercent": 70,
+        "ScoreReading": 350,
+        "ScoreListening": 360
+    },
+    {
+        "ID": 7,
+        "StudentProfileID": 7,
+        "StartedAt": "2024-10-07T09:55:00",
+        "SubmittedAt": "2024-10-07T10:50:25",
+        "ScorePercent": 98,
+        "ScoreReading": 490,
+        "ScoreListening": 490
+    },
+    {
+        "ID": 8,
+        "StudentProfileID": 8,
+        "StartedAt": "2024-10-08T15:00:10",
+        "SubmittedAt": "2024-10-08T15:45:37",
+        "ScorePercent": 100,
+        "ScoreReading": 495,
+        "ScoreListening": 495
+    }
+]

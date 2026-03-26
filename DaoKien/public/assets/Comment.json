@@ -1,0 +1,74 @@
+[
+    {
+        "ID": 1,
+        "Content": "Đề thi khá hay!",
+        "CreateAt": "2024-10-01",
+        "ParentId": null,
+        "Status": "visible",
+        "StudentProfileID": 1,
+        "ExamID": 1
+    },
+    {
+        "ID": 2,
+        "Content": "Câu hỏi phần nghe hơi khó.",
+        "CreateAt": "2024-10-02",
+        "ParentId": null,
+        "Status": "visible",
+        "StudentProfileID": 2,
+        "ExamID": 1
+    },
+    {
+        "ID": 3,
+        "Content": "Cảm ơn cô giáo!",
+        "CreateAt": "2024-10-03",
+        "ParentId": 1,
+        "Status": "visible",
+        "StudentProfileID": 3,
+        "ExamID": 1
+    },
+    {
+        "ID": 4,
+        "Content": "Bài luyện tập hữu ích.",
+        "CreateAt": "2024-10-04",
+        "ParentId": null,
+        "Status": "visible",
+        "StudentProfileID": 4,
+        "ExamID": 3
+    },
+    {
+        "ID": 5,
+        "Content": "Em làm sai nhiều quá 😅",
+        "CreateAt": "2024-10-05",
+        "ParentId": null,
+        "Status": "visible",
+        "StudentProfileID": 5,
+        "ExamID": 2
+    },
+    {
+        "ID": 6,
+        "Content": "Đề khó nhưng thú vị.",
+        "CreateAt": "2024-10-06",
+        "ParentId": null,
+        "Status": "visible",
+        "StudentProfileID": 6,
+        "ExamID": 5
+    },
+    {
+        "ID": 7,
+        "Content": "Em muốn có thêm đề luyện nghe.",
+        "CreateAt": "2024-10-07",
+        "ParentId": null,
+        "Status": "visible",
+        "StudentProfileID": 1,
+        "ExamID": 8
+    },
+    {
+        "ID": 8,
+        "Content": "Đề này có đáp án không ạ?",
+        "CreateAt": "2024-10-08",
+        "ParentId": null,
+        "Status": "visible",
+        "StudentProfileID": 2,
+        "ExamID": 1
+    }
+]

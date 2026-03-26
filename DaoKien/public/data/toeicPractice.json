@@ -1,0 +1,1570 @@
+{
+    "roles": [
+        {
+            "ID": 1,
+            "Value": "Admin",
+            "Description": "Quản trị hệ thống"
+        },
+        {
+            "ID": 2,
+            "Value": "Teacher",
+            "Description": "Giáo viên tạo đề và câu hỏi"
+        },
+        {
+            "ID": 3,
+            "Value": "Student",
+            "Description": "Học viên luyện thi"
+        }
+    ],
+    "userRoles": [
+        {
+            "ID": 1,
+            "UserID": 1,
+            "RoleID": 1,
+            "AssignedAt": "2024-01-10"
+        },
+        {
+            "ID": 2,
+            "UserID": 2,
+            "RoleID": 2,
+            "AssignedAt": "2024-01-12"
+        },
+        {
+            "ID": 3,
+            "UserID": 3,
+            "RoleID": 3,
+            "AssignedAt": "2024-01-20"
+        },
+        {
+            "ID": 4,
+            "UserID": 4,
+            "RoleID": 3,
+            "AssignedAt": "2024-02-10"
+        },
+        {
+            "ID": 5,
+            "UserID": 5,
+            "RoleID": 3,
+            "AssignedAt": "2024-03-05"
+        },
+        {
+            "ID": 6,
+            "UserID": 6,
+            "RoleID": 3,
+            "AssignedAt": "2024-03-15"
+        }
+    ],
+    "users": [
+        {
+            "ID": 1,
+            "Email": "admin@example.com",
+            "Password": "123456",
+            "FullName": "Admin User",
+            "Status": "active",
+            "CreateAt": "2024-01-10",
+            "Token": "abc123",
+            "Phone": "0901000001",
+            "Address": "Hà Nội",
+            "Sex": "Nam",
+            "Birthday": "1990-05-15"
+        },
+        {
+            "ID": 2,
+            "Email": "teacher@example.com",
+            "Password": "123456",
+            "FullName": "Nguyễn Thị Giáo Viên",
+            "Status": "active",
+            "CreateAt": "2024-01-12",
+            "Token": "abc234",
+            "Phone": "0901000002",
+            "Address": "TP.HCM",
+            "Sex": "Nữ",
+            "Birthday": "1992-09-10"
+        },
+        {
+            "ID": 3,
+            "Email": "student1@example.com",
+            "Password": "123456",
+            "FullName": "Trần Văn A",
+            "Status": "active",
+            "CreateAt": "2024-01-20",
+            "Token": "abc345",
+            "Phone": "0901000003",
+            "Address": "Đà Nẵng",
+            "Sex": "Nam",
+            "Birthday": "2000-03-15"
+        },
+        {
+            "ID": 4,
+            "Email": "student2@example.com",
+            "Password": "123456",
+            "FullName": "Lê Thị B",
+            "Status": "active",
+            "CreateAt": "2024-02-10",
+            "Token": "abc456",
+            "Phone": "0901000004",
+            "Address": "Huế",
+            "Sex": "Nữ",
+            "Birthday": "2001-07-10"
+        },
+        {
+            "ID": 5,
+            "Email": "student3@example.com",
+            "Password": "123456",
+            "FullName": "Phạm Văn C",
+            "Status": "inactive",
+            "CreateAt": "2024-03-05",
+            "Token": "abc567",
+            "Phone": "0901000005",
+            "Address": "Cần Thơ",
+            "Sex": "Nam",
+            "Birthday": "1999-08-20"
+        },
+        {
+            "ID": 6,
+            "Email": "student4@example.com",
+            "Password": "123456",
+            "FullName": "Đỗ Thị D",
+            "Status": "active",
+            "CreateAt": "2024-03-15",
+            "Token": "abc678",
+            "Phone": "0901000006",
+            "Address": "Hải Phòng",
+            "Sex": "Nữ",
+            "Birthday": "2002-01-12"
+        }
+    ],
+    "studentProfiles": [
+        {
+            "ID": 1,
+            "UserID": 3,
+            "TargetScore": 800,
+            "DailyStudyMinutes": 60,
+            "GoalDate": "2024-12-01",
+            "PlacementLevel": "B2",
+            "LastActiveAt": "2024-10-01"
+        },
+        {
+            "ID": 2,
+            "UserID": 4,
+            "TargetScore": 750,
+            "DailyStudyMinutes": 45,
+            "GoalDate": "2024-12-15",
+            "PlacementLevel": "B1",
+            "LastActiveAt": "2024-09-28"
+        },
+        {
+            "ID": 3,
+            "UserID": 5,
+            "TargetScore": 600,
+            "DailyStudyMinutes": 30,
+            "GoalDate": "2024-12-20",
+            "PlacementLevel": "A2",
+            "LastActiveAt": "2024-09-20"
+        },
+        {
+            "ID": 4,
+            "UserID": 6,
+            "TargetScore": 850,
+            "DailyStudyMinutes": 90,
+            "GoalDate": "2025-01-10",
+            "PlacementLevel": "C1",
+            "LastActiveAt": "2024-10-10"
+        }
+    ],
+    "questions": [
+        {
+            "ID": 1,
+            "QuestionText": "Look at the picture and choose the best description.",
+            "MediaQuestionID": 101,
+            "QuestionNumber": 1
+        },
+        {
+            "ID": 2,
+            "QuestionText": "Choose the statement that best describes the scene.",
+            "MediaQuestionID": 102,
+            "QuestionNumber": 2
+        },
+        {
+            "ID": 3,
+            "QuestionText": "Select the sentence that describes the man in the picture.",
+            "MediaQuestionID": 103,
+            "QuestionNumber": 3
+        },
+        {
+            "ID": 11,
+            "QuestionText": "You will hear a question. Choose the best response.",
+            "MediaQuestionID": 201,
+            "QuestionNumber": 11
+        },
+        {
+            "ID": 12,
+            "QuestionText": "Choose the most appropriate response to the question.",
+            "MediaQuestionID": 202,
+            "QuestionNumber": 12
+        },
+        {
+            "ID": 13,
+            "QuestionText": "Listen and choose the correct reply.",
+            "MediaQuestionID": 203,
+            "QuestionNumber": 13
+        },
+        {
+            "ID": 21,
+            "QuestionText": "Listen to a conversation and answer the question.",
+            "MediaQuestionID": 301,
+            "QuestionNumber": 21
+        },
+        {
+            "ID": 22,
+            "QuestionText": "What is the man mainly concerned about?",
+            "MediaQuestionID": 301,
+            "QuestionNumber": 22
+        },
+        {
+            "ID": 23,
+            "QuestionText": "What does the woman suggest doing?",
+            "MediaQuestionID": 302,
+            "QuestionNumber": 23
+        },
+        {
+            "ID": 31,
+            "QuestionText": "Listen to the announcement and answer the question.",
+            "MediaQuestionID": 401,
+            "QuestionNumber": 31
+        },
+        {
+            "ID": 32,
+            "QuestionText": "What is the purpose of this announcement?",
+            "MediaQuestionID": 401,
+            "QuestionNumber": 32
+        },
+        {
+            "ID": 33,
+            "QuestionText": "What will happen tomorrow according to the announcement?",
+            "MediaQuestionID": 401,
+            "QuestionNumber": 33
+        },
+        {
+            "ID": 41,
+            "QuestionText": "Choose the correct word to complete the sentence.",
+            "MediaQuestionID": 501,
+            "QuestionNumber": 41
+        },
+        {
+            "ID": 42,
+            "QuestionText": "Select the best answer to complete the sentence.",
+            "MediaQuestionID": 502,
+            "QuestionNumber": 42
+        },
+        {
+            "ID": 43,
+            "QuestionText": "Choose the word that best fits the blank.",
+            "MediaQuestionID": 503,
+            "QuestionNumber": 43
+        },
+        {
+            "ID": 51,
+            "QuestionText": "Read the text and choose the best answer.",
+            "MediaQuestionID": 601,
+            "QuestionNumber": 51
+        },
+        {
+            "ID": 52,
+            "QuestionText": "Choose the best sentence to complete the passage.",
+            "MediaQuestionID": 601,
+            "QuestionNumber": 52
+        },
+        {
+            "ID": 53,
+            "QuestionText": "Select the word that best completes the sentence.",
+            "MediaQuestionID": 601,
+            "QuestionNumber": 53
+        },
+        {
+            "ID": 61,
+            "QuestionText": "Read the article and answer the question.",
+            "MediaQuestionID": 701,
+            "QuestionNumber": 61
+        },
+        {
+            "ID": 62,
+            "QuestionText": "What is the main idea of the passage?",
+            "MediaQuestionID": 701,
+            "QuestionNumber": 62
+        },
+        {
+            "ID": 63,
+            "QuestionText": "What does the author imply in the article?",
+            "MediaQuestionID": 702,
+            "QuestionNumber": 63
+        },
+        {
+            "ID": 64,
+            "QuestionText": "What can be inferred from the text?",
+            "MediaQuestionID": 702,
+            "QuestionNumber": 64
+        }
+    ],
+    "choices": [
+        {
+            "ID": 1,
+            "QuestionID": 1,
+            "Content": "A man is riding a bicycle on the street.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 2,
+            "QuestionID": 1,
+            "Content": "A woman is reading a book indoors.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 3,
+            "QuestionID": 1,
+            "Content": "Several people are sitting at a meeting table.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 4,
+            "QuestionID": 1,
+            "Content": "A car is parked in front of a store.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 5,
+            "QuestionID": 2,
+            "Content": "A group of people are walking through a park.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 6,
+            "QuestionID": 2,
+            "Content": "A man is speaking on a stage.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 7,
+            "QuestionID": 2,
+            "Content": "A woman is shopping at a grocery store.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 8,
+            "QuestionID": 2,
+            "Content": "Children are drawing on a whiteboard.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 9,
+            "QuestionID": 3,
+            "Content": "A man is presenting something on a laptop.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 10,
+            "QuestionID": 3,
+            "Content": "The man is holding a cup of coffee.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 11,
+            "QuestionID": 3,
+            "Content": "The man is walking outside the building.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 12,
+            "QuestionID": 3,
+            "Content": "The man is standing behind a counter.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 21,
+            "QuestionID": 11,
+            "Content": "Sure, I can help you with that.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 22,
+            "QuestionID": 11,
+            "Content": "No, I haven't seen that movie.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 23,
+            "QuestionID": 11,
+            "Content": "The store closes at 9 p.m.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 25,
+            "QuestionID": 12,
+            "Content": "Yes, I can send it right away.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 26,
+            "QuestionID": 12,
+            "Content": "I bought it last weekend.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 27,
+            "QuestionID": 12,
+            "Content": "The next train leaves in 10 minutes.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 29,
+            "QuestionID": 13,
+            "Content": "I think she will arrive soon.",
+            "Attribute": "A",
+            "IsCorrect": false
+        },
+        {
+            "ID": 30,
+            "QuestionID": 13,
+            "Content": "No, I didn’t attend the meeting.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 31,
+            "QuestionID": 13,
+            "Content": "Yes, I already submitted the report.",
+            "Attribute": "C",
+            "IsCorrect": true
+        },
+        {
+            "ID": 32,
+            "QuestionID": 13,
+            "Content": "The office opens at 8 a.m.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 33,
+            "QuestionID": 21,
+            "Content": "They are discussing a project deadline.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 34,
+            "QuestionID": 21,
+            "Content": "They are planning a business trip.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 35,
+            "QuestionID": 21,
+            "Content": "They are talking about a new coworker.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 36,
+            "QuestionID": 21,
+            "Content": "They are discussing a change in the company rules.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 37,
+            "QuestionID": 22,
+            "Content": "He is concerned about the upcoming deadline.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 38,
+            "QuestionID": 22,
+            "Content": "He is worried about losing his documents.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 39,
+            "QuestionID": 22,
+            "Content": "He is unhappy with his colleague.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 40,
+            "QuestionID": 22,
+            "Content": "He is stressed about moving to a new office.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 41,
+            "QuestionID": 23,
+            "Content": "She suggests taking a short break.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 42,
+            "QuestionID": 23,
+            "Content": "She suggests asking the manager for help.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 43,
+            "QuestionID": 23,
+            "Content": "She suggests cancelling the task.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 44,
+            "QuestionID": 23,
+            "Content": "She suggests leaving work early.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 45,
+            "QuestionID": 31,
+            "Content": "It is a public announcement regarding train service.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 46,
+            "QuestionID": 31,
+            "Content": "It is a weather report for tomorrow.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 47,
+            "QuestionID": 31,
+            "Content": "It is a company meeting invitation.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 48,
+            "QuestionID": 31,
+            "Content": "It is a reminder about safety procedures.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 49,
+            "QuestionID": 32,
+            "Content": "To inform passengers about a temporary station closure.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 50,
+            "QuestionID": 32,
+            "Content": "To cancel all train departures.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 51,
+            "QuestionID": 32,
+            "Content": "To give a weather forecast for the next week.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 52,
+            "QuestionID": 32,
+            "Content": "To inform employees about a meeting.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 53,
+            "QuestionID": 33,
+            "Content": "The train schedule will change tomorrow.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 54,
+            "QuestionID": 33,
+            "Content": "The train service will be canceled entirely.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 55,
+            "QuestionID": 33,
+            "Content": "All stations will remain open as usual.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 56,
+            "QuestionID": 33,
+            "Content": "The weather will cause delays in bus services.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 57,
+            "QuestionID": 41,
+            "Content": "Complete the sentence with the word 'important'.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 58,
+            "QuestionID": 41,
+            "Content": "Complete the sentence with the word 'beautiful'.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 59,
+            "QuestionID": 41,
+            "Content": "Complete the sentence with the word 'difficult'.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 60,
+            "QuestionID": 41,
+            "Content": "Complete the sentence with the word 'funny'.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 61,
+            "QuestionID": 42,
+            "Content": "Choose 'necessary' to complete the sentence correctly.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 62,
+            "QuestionID": 42,
+            "Content": "Choose 'amazing' to complete the sentence correctly.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 63,
+            "QuestionID": 42,
+            "Content": "Choose 'fun' to complete the sentence correctly.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 64,
+            "QuestionID": 42,
+            "Content": "Choose 'friendly' to complete the sentence correctly.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 65,
+            "QuestionID": 43,
+            "Content": "The best word to fill in the blank is 'responsible'.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 66,
+            "QuestionID": 43,
+            "Content": "The best word to fill in the blank is 'happy'.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 67,
+            "QuestionID": 43,
+            "Content": "The best word to fill in the blank is 'angry'.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 68,
+            "QuestionID": 43,
+            "Content": "The best word to fill in the blank is 'tired'.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 69,
+            "QuestionID": 51,
+            "Content": "The best answer for the text is option A.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 70,
+            "QuestionID": 51,
+            "Content": "Option B is the correct answer.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 71,
+            "QuestionID": 51,
+            "Content": "Option C is the correct answer.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 72,
+            "QuestionID": 51,
+            "Content": "Option D is the correct answer.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 73,
+            "QuestionID": 52,
+            "Content": "The best sentence to complete the passage is option A.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 74,
+            "QuestionID": 52,
+            "Content": "Option B completes the passage.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 75,
+            "QuestionID": 52,
+            "Content": "Option C completes the passage.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 76,
+            "QuestionID": 52,
+            "Content": "Option D completes the passage.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 77,
+            "QuestionID": 53,
+            "Content": "The word that best completes the sentence is 'effective'.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 78,
+            "QuestionID": 53,
+            "Content": "The word that best completes the sentence is 'easy'.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 79,
+            "QuestionID": 53,
+            "Content": "The word that best completes the sentence is 'big'.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 80,
+            "QuestionID": 53,
+            "Content": "The word that best completes the sentence is 'small'.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 81,
+            "QuestionID": 61,
+            "Content": "The main point of the article is discussed in option A.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 82,
+            "QuestionID": 61,
+            "Content": "Option B gives the main point.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 83,
+            "QuestionID": 61,
+            "Content": "Option C gives the main idea.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 84,
+            "QuestionID": 61,
+            "Content": "Option D gives the main idea.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 85,
+            "QuestionID": 62,
+            "Content": "The main idea of the passage is option A.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 86,
+            "QuestionID": 62,
+            "Content": "Option B is the main idea.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 87,
+            "QuestionID": 62,
+            "Content": "Option C is the main idea.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 88,
+            "QuestionID": 62,
+            "Content": "Option D is the main idea.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 89,
+            "QuestionID": 63,
+            "Content": "The author implies that employees should follow rules.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 90,
+            "QuestionID": 63,
+            "Content": "The author implies that employees can do anything.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 91,
+            "QuestionID": 63,
+            "Content": "The author implies that rules are unnecessary.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 92,
+            "QuestionID": 63,
+            "Content": "The author implies that the company is closing.",
+            "Attribute": "D",
+            "IsCorrect": false
+        },
+        {
+            "ID": 93,
+            "QuestionID": 64,
+            "Content": "It can be inferred that the project will be completed on time.",
+            "Attribute": "A",
+            "IsCorrect": true
+        },
+        {
+            "ID": 94,
+            "QuestionID": 64,
+            "Content": "It can be inferred that the project will be canceled.",
+            "Attribute": "B",
+            "IsCorrect": false
+        },
+        {
+            "ID": 95,
+            "QuestionID": 64,
+            "Content": "It can be inferred that there will be no changes.",
+            "Attribute": "C",
+            "IsCorrect": false
+        },
+        {
+            "ID": 96,
+            "QuestionID": 64,
+            "Content": "It can be inferred that everyone is happy.",
+            "Attribute": "D",
+            "IsCorrect": false
+        }
+    ],
+    "parts": [
+        {
+            "id": 1,
+            "title": "Part 1: Mô tả tranh",
+            "skill": "Listening",
+            "questions": 6,
+            "description": "Chọn mô tả đúng nhất cho bức ảnh được cho.",
+            "types": [
+                "Tranh tả người",
+                "Tranh tả cả người và vật"
+            ]
+        },
+        {
+            "id": 2,
+            "title": "Part 2: Hỏi - Đáp",
+            "skill": "Listening",
+            "questions": 25,
+            "description": "Nghe câu hỏi và chọn câu trả lời phù hợp nhất.",
+            "types": [
+                "Câu hỏi WHAT",
+                "Câu hỏi WHO",
+                "Câu hỏi WHERE",
+                "Câu hỏi WHEN",
+                "Câu hỏi HOW",
+                "Câu hỏi WHY",
+                "Câu hỏi YES/NO",
+                "Câu hỏi đuôi",
+                "Câu hỏi lựa chọn",
+                "Câu yêu cầu, đề nghị",
+                "Câu trần thuật"
+            ]
+        },
+        {
+            "id": 3,
+            "title": "Part 3: Đoạn hội thoại ngắn",
+            "skill": "Listening",
+            "questions": 39,
+            "description": "Nghe các đoạn hội thoại ngắn và trả lời câu hỏi.",
+            "types": [
+                "Câu hỏi về chủ đề, mục đích",
+                "Câu hỏi về danh tính người nói",
+                "Câu hỏi chi tiết cuộc hội thoại",
+                "Câu hỏi về hành động tương lai",
+                "Câu hỏi kết hợp bảng biểu",
+                "Câu hỏi về hàm ý câu nói",
+                "Chủ đề: Company - General Office Work",
+                "Chủ đề: Company - Business, Marketing",
+                "Chủ đề: Company - Event, Project",
+                "Chủ đề: Company - Facility",
+                "Chủ đề: Shopping, Service",
+                "Chủ đề: Order, Delivery",
+                "Chủ đề: Housing",
+                "Chủ đề: Điện thoại",
+                "Câu hỏi yêu cầu, gọi ý"
+            ]
+        },
+        {
+            "id": 4,
+            "title": "Part 4: Bài nói ngắn",
+            "skill": "Listening",
+            "questions": 30,
+            "description": "Nghe các đoạn thông báo, bài nói và chọn câu trả lời đúng.",
+            "types": [
+                "Câu hỏi về chủ đề, mục đích",
+                "Câu hỏi về danh tính, địa điểm",
+                "Câu hỏi về chi tiết",
+                "Câu hỏi về hành động tương lai",
+                "Câu hỏi về hàm ý câu nói",
+                "Dạng bài: Telephone message - Tin nhắn thoại",
+                "Dạng bài: Advertisement - Quảng cáo",
+                "Dạng bài: Announcement - Thông báo",
+                "Dạng bài: Talk - Bài phát biểu, diễn văn",
+                "Dạng bài: Excerpt from a meeting - Trích dẫn từ buổi họp",
+                "Câu hỏi yêu cầu, gợi ý"
+            ]
+        },
+        {
+            "id": 5,
+            "title": "Part 5: Câu chưa hoàn chỉnh",
+            "skill": "Reading",
+            "questions": 30,
+            "description": "Chọn từ hoặc cụm từ đúng để hoàn thành câu.",
+            "types": [
+                "Câu hỏi từ loại",
+                "Câu hỏi từ vựng",
+                "Ngữ pháp: Danh từ",
+                "Ngữ pháp: Đại từ",
+                "Ngữ pháp: Tính từ",
+                "Ngữ pháp: Thì",
+                "Ngữ pháp: Trạng từ",
+                "Ngữ pháp: Động từ nguyên mẫu có to",
+                "Ngữ pháp: Động từ nguyên mẫu không to",
+                "Ngữ pháp: Phân từ và Cấu trúc phân từ",
+                "Ngữ pháp: Liên từ",
+                "Ngữ pháp: Mệnh đề quan hệ"
+            ]
+        },
+        {
+            "id": 6,
+            "title": "Part 6: Hoàn thành đoạn văn",
+            "skill": "Reading",
+            "questions": 16,
+            "description": "Hoàn thành đoạn văn bằng cách chọn đáp án thích hợp.",
+            "types": [
+                "Câu hỏi từ loại",
+                "Câu hỏi ngữ pháp",
+                "Câu hỏi từ vựng",
+                "Câu hỏi điền câu vào đoạn văn",
+                "Hình thức: Thư điện tử/Thư tay (Email/Letter)",
+                "Hình thức: Quảng cáo (Advertisement)",
+                "Hình thức: Thông báo/Thông tin nội bộ (Notice/Memo)",
+                "Ngữ pháp: Danh từ",
+                "Ngữ pháp: Tính từ",
+                "Ngữ pháp: Thì",
+                "Ngữ pháp: Trạng từ",
+                "Ngữ pháp: Liên từ",
+                "Ngữ pháp: Động từ nguyên mẫu",
+                "Ngữ pháp: Cấu trúc câu ghép"
+            ]
+        },
+        {
+            "id": 7,
+            "title": "Part 7: Đọc hiểu",
+            "skill": "Reading",
+            "questions": 54,
+            "description": "Đọc các đoạn văn và trả lời câu hỏi.",
+            "types": [
+                "Câu hỏi tìm thông tin",
+                "Câu hỏi chi tiết sai đúng",
+                "Câu hỏi về chủ đề, mục đích",
+                "Câu hỏi về hàm ý câu",
+                "Dạng bài: Đơn đoạn",
+                "Dạng bài: Nhiều đoạn",
+                "Dạng bài: Email/Letter - Thư điện tử/Thư tay",
+                "Dạng bài: Form - Biểu mẫu",
+                "Dạng bài: Review - Bài đánh giá",
+                "Dạng bài: Advertisement - Quảng cáo",
+                "Dạng bài: Notice - Thông báo",
+                "Dạng bài: Text message - Chuỗi tin nhắn",
+                "Dạng bài: Menu - Danh sách/Thực đơn"
+            ]
+        }
+    ],
+    "mediaQuestions": [
+        {
+            "ID": 101,
+            "AudioUrl": "audio/part1_1.mp3",
+            "ImageUrl": "images/part1_1.jpg",
+            "Script": "A man is riding a bicycle on the street.",
+            "PartID": 1
+        },
+        {
+            "ID": 102,
+            "AudioUrl": "audio/part1_2.mp3",
+            "ImageUrl": "images/part1_2.jpg",
+            "Script": "A woman is talking to a man near the building.",
+            "PartID": 1
+        },
+        {
+            "ID": 103,
+            "AudioUrl": "audio/part1_3.mp3",
+            "ImageUrl": "images/part1_3.jpg",
+            "Script": "A man is standing next to a parked car.",
+            "PartID": 1
+        },
+        {
+            "ID": 201,
+            "AudioUrl": "audio/part1_1.mp3",
+            "ImageUrl": "",
+            "Script": "You will hear a question. Choose the best response.",
+            "PartID": 2
+        },
+        {
+            "ID": 202,
+            "AudioUrl": "audio/part2_12.mp3",
+            "ImageUrl": "",
+            "Script": "Choose the most appropriate response to the question.",
+            "PartID": 2
+        },
+        {
+            "ID": 203,
+            "AudioUrl": "audio/part2_13.mp3",
+            "ImageUrl": "",
+            "Script": "Listen and choose the correct reply.",
+            "PartID": 2
+        },
+        {
+            "ID": 301,
+            "AudioUrl": "audio/part1_1.mp3",
+            "ImageUrl": "",
+            "Script": "Listen to a conversation and answer the question.",
+            "PartID": 3
+        },
+        {
+            "ID": 302,
+            "AudioUrl": "audio/part1_1.mp3",
+            "ImageUrl": "",
+            "Script": "Listen to a conversation and answer the question.",
+            "PartID": 3
+        },
+        {
+            "ID": 401,
+            "AudioUrl": "audio/part4_31.mp3",
+            "ImageUrl": "",
+            "Script": "Listen to the announcement and answer the question.",
+            "PartID": 4
+        },
+        {
+            "ID": 501,
+            "AudioUrl": "",
+            "ImageUrl": "",
+            "Script": "",
+            "PartID": 5
+        },
+        {
+            "ID": 502,
+            "AudioUrl": "",
+            "ImageUrl": "",
+            "Script": "",
+            "PartID": 5
+        },
+        {
+            "ID": 503,
+            "AudioUrl": "",
+            "ImageUrl": "",
+            "Script": "",
+            "PartID": 5
+        },
+        {
+            "ID": 601,
+            "AudioUrl": "",
+            "ImageUrl": "",
+            "Script": "Read the text and choose the best answer.",
+            "PartID": 6
+        },
+        {
+            "ID": 701,
+            "AudioUrl": "",
+            "ImageUrl": "",
+            "Script": "Read the article and answer the question.",
+            "PartID": 7
+        },
+        {
+            "ID": 702,
+            "AudioUrl": "",
+            "ImageUrl": "",
+            "Script": "What is the main idea of the passage?",
+            "PartID": 7
+        }
+    ],
+    "exams": [
+        {
+            "ID": 1,
+            "Title": "TOEIC Full Test 1",
+            "TimeCreate": "2024-09-01",
+            "TimeExam": "120",
+            "Type": "Full Test",
+            "ExamTypeID": 1,
+            "UserID": 2
+        },
+        {
+            "ID": 2,
+            "Title": "TOEIC Full Test 2",
+            "TimeCreate": "2024-09-15",
+            "TimeExam": "120",
+            "Type": "Full Test",
+            "ExamTypeID": 1,
+            "UserID": 2
+        },
+        {
+            "ID": 3,
+            "Title": "Practice Listening",
+            "TimeCreate": "2024-09-20",
+            "TimeExam": "120",
+            "Type": "Practice",
+            "ExamTypeID": 2,
+            "UserID": 2
+        },
+        {
+            "ID": 4,
+            "Title": "Practice Reading",
+            "TimeCreate": "2024-09-21",
+            "TimeExam": "75",
+            "Type": "Practice",
+            "ExamTypeID": 2,
+            "UserID": 2
+        },
+        {
+            "ID": 5,
+            "Title": "Mini TOEIC Test",
+            "TimeCreate": "2024-10-01",
+            "TimeExam": "60",
+            "Type": "Practice",
+            "ExamTypeID": 2,
+            "UserID": 2
+        },
+        {
+            "ID": 6,
+            "Title": "Grammar Check 1",
+            "TimeCreate": "2024-10-05",
+            "TimeExam": "60",
+            "Type": "Practice",
+            "ExamTypeID": 2,
+            "UserID": 2
+        },
+        {
+            "ID": 7,
+            "Title": "Vocabulary Practice",
+            "TimeCreate": "2024-10-07",
+            "TimeExam": "60",
+            "Type": "Practice",
+            "ExamTypeID": 2,
+            "UserID": 2
+        },
+        {
+            "ID": 8,
+            "Title": "Listening Only",
+            "TimeCreate": "2024-10-10",
+            "TimeExam": "45",
+            "Type": "Practice",
+            "ExamTypeID": 2,
+            "UserID": 2
+        }
+    ],
+    "examTypes": [
+        {
+            "ID": 1,
+            "Name": "Full Test",
+            "Description": "A complete TOEIC test covering all sections."
+        },
+        {
+            "ID": 2,
+            "Name": "Practice Test",
+            "Description": "A practice test focusing on specific sections."
+        }
+    ],
+    "mediaQuestion_Exam": [
+        {
+            "ID": 1,
+            "ExamID": 1,
+            "MediaQuestionID": 101
+        },
+        {
+            "ID": 2,
+            "ExamID": 1,
+            "MediaQuestionID": 102
+        },
+        {
+            "ID": 3,
+            "ExamID": 1,
+            "MediaQuestionID": 103
+        },
+        {
+            "ID": 4,
+            "ExamID": 1,
+            "MediaQuestionID": 201
+        },
+        {
+            "ID": 5,
+            "ExamID": 1,
+            "MediaQuestionID": 202
+        },
+        {
+            "ID": 6,
+            "ExamID": 1,
+            "MediaQuestionID": 203
+        },
+        {
+            "ID": 7,
+            "ExamID": 1,
+            "MediaQuestionID": 301
+        },
+        {
+            "ID": 8,
+            "ExamID": 1,
+            "MediaQuestionID": 401
+        },
+        {
+            "ID": 9,
+            "ExamID": 1,
+            "MediaQuestionID": 501
+        },
+        {
+            "ID": 10,
+            "ExamID": 1,
+            "MediaQuestionID": 502
+        },
+        {
+            "ID": 11,
+            "ExamID": 1,
+            "MediaQuestionID": 503
+        },
+        {
+            "ID": 12,
+            "ExamID": 1,
+            "MediaQuestionID": 601
+        },
+        {
+            "ID": 13,
+            "ExamID": 1,
+            "MediaQuestionID": 701
+        },
+        {
+            "ID": 14,
+            "ExamID": 1,
+            "MediaQuestionID": 702
+        },
+        {
+            "ID": 15,
+            "ExamID": 2,
+            "MediaQuestionID": 101
+        },
+        {
+            "ID": 16,
+            "ExamID": 2,
+            "MediaQuestionID": 102
+        },
+        {
+            "ID": 17,
+            "ExamID": 2,
+            "MediaQuestionID": 103
+        }
+    ],
+    "comments": [
+        {
+            "ID": 1,
+            "Content": "Đề thi khá hay!",
+            "CreateAt": "2024-10-01",
+            "ParentId": null,
+            "Status": "visible",
+            "StudentProfileID": 1,
+            "ExamID": 1
+        },
+        {
+            "ID": 2,
+            "Content": "Câu hỏi phần nghe hơi khó.",
+            "CreateAt": "2024-10-02",
+            "ParentId": null,
+            "Status": "visible",
+            "StudentProfileID": 2,
+            "ExamID": 1
+        },
+        {
+            "ID": 3,
+            "Content": "Cảm ơn cô giáo!",
+            "CreateAt": "2024-10-03",
+            "ParentId": 1,
+            "Status": "visible",
+            "StudentProfileID": 3,
+            "ExamID": 1
+        },
+        {
+            "ID": 4,
+            "Content": "Bài luyện tập hữu ích.",
+            "CreateAt": "2024-10-04",
+            "ParentId": null,
+            "Status": "visible",
+            "StudentProfileID": 4,
+            "ExamID": 1
+        },
+        {
+            "ID": 7,
+            "Content": "Em muốn có thêm đề luyện nghe.",
+            "CreateAt": "2024-10-07",
+            "ParentId": null,
+            "Status": "visible",
+            "StudentProfileID": 1,
+            "ExamID": 2
+        },
+        {
+            "ID": 8,
+            "Content": "Đề này có đáp án không ạ?",
+            "CreateAt": "2024-10-08",
+            "ParentId": null,
+            "Status": "visible",
+            "StudentProfileID": 2,
+            "ExamID": 2
+        }
+    ],
+    "attempts": [
+        {
+            "ID": 1,
+            "StudentProfileID": 1,
+            "ExamID": 1,
+            "StartedAt": "2024-10-01T08:15:00",
+            "SubmittedAt": "2024-10-01T10:15:00",
+            "ScorePercent": 85,
+            "ScoreReading": 420,
+            "ScoreListening": 410
+        },
+        {
+            "ID": 2,
+            "StudentProfileID": 1,
+            "ExamID": 2,
+            "StartedAt": "2024-10-02T09:00:00",
+            "SubmittedAt": "2024-10-02T11:00:00",
+            "ScorePercent": 88,
+            "ScoreReading": 430,
+            "ScoreListening": 430
+        }
+    ],
+    "attemptAnswers": [
+        {
+            "ID": 1,
+            "AttemptID": 1,
+            "QuestionID": 1,
+            "ChoiceID": 2,
+            "IsCorrect": false
+        },
+        {
+            "ID": 2,
+            "AttemptID": 1,
+            "QuestionID": 2,
+            "ChoiceID": 5,
+            "IsCorrect": true
+        },
+        {
+            "ID": 3,
+            "AttemptID": 1,
+            "QuestionID": 3,
+            "ChoiceID": 9,
+            "IsCorrect": true
+        },
+        {
+            "ID": 4,
+            "AttemptID": 1,
+            "QuestionID": 11,
+            "ChoiceID": 21,
+            "IsCorrect": true
+        },
+        {
+            "ID": 5,
+            "AttemptID": 1,
+            "QuestionID": 12,
+            "ChoiceID": 25,
+            "IsCorrect": true
+        },
+        {
+            "ID": 6,
+            "AttemptID": 1,
+            "QuestionID": 13,
+            "ChoiceID": 31,
+            "IsCorrect": true
+        },
+        {
+            "ID": 7,
+            "AttemptID": 1,
+            "QuestionID": 21,
+            "ChoiceID": 37,
+            "IsCorrect": true
+        },
+        {
+            "ID": 8,
+            "AttemptID": 1,
+            "QuestionID": 22,
+            "ChoiceID": 37,
+            "IsCorrect": true
+        },
+        {
+            "ID": 9,
+            "AttemptID": 1,
+            "QuestionID": 23,
+            "ChoiceID": 41,
+            "IsCorrect": true
+        },
+        {
+            "ID": 10,
+            "AttemptID": 1,
+            "QuestionID": 31,
+            "ChoiceID": 45,
+            "IsCorrect": true
+        },
+        {
+            "ID": 11,
+            "AttemptID": 1,
+            "QuestionID": 32,
+            "ChoiceID": 49,
+            "IsCorrect": true
+        },
+        {
+            "ID": 12,
+            "AttemptID": 1,
+            "QuestionID": 33,
+            "ChoiceID": 53,
+            "IsCorrect": true
+        },
+        {
+            "ID": 13,
+            "AttemptID": 1,
+            "QuestionID": 41,
+            "ChoiceID": 57,
+            "IsCorrect": true
+        },
+        {
+            "ID": 14,
+            "AttemptID": 1,
+            "QuestionID": 42,
+            "ChoiceID": 61,
+            "IsCorrect": true
+        },
+        {
+            "ID": 15,
+            "AttemptID": 1,
+            "QuestionID": 43,
+            "ChoiceID": 65,
+            "IsCorrect": true
+        },
+        {
+            "ID": 16,
+            "AttemptID": 1,
+            "QuestionID": 51,
+            "ChoiceID": 69,
+            "IsCorrect": true
+        },
+        {
+            "ID": 17,
+            "AttemptID": 1,
+            "QuestionID": 52,
+            "ChoiceID": 73,
+            "IsCorrect": true
+        },
+        {
+            "ID": 18,
+            "AttemptID": 1,
+            "QuestionID": 53,
+            "ChoiceID": 77,
+            "IsCorrect": true
+        },
+        {
+            "ID": 19,
+            "AttemptID": 1,
+            "QuestionID": 61,
+            "ChoiceID": 81,
+            "IsCorrect": true
+        },
+        {
+            "ID": 20,
+            "AttemptID": 1,
+            "QuestionID": 62,
+            "ChoiceID": 85,
+            "IsCorrect": true
+        },
+        {
+            "ID": 21,
+            "AttemptID": 1,
+            "QuestionID": 63,
+            "ChoiceID": 89,
+            "IsCorrect": true
+        },
+        {
+            "ID": 22,
+            "AttemptID": 1,
+            "QuestionID": 64,
+            "ChoiceID": 93,
+            "IsCorrect": true
+        }
+    ]
+}

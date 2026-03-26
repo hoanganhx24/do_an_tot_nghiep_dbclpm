@@ -1,0 +1,74 @@
+[
+    {
+        "ID": 1,
+        "Title": "TOEIC Full Test 1",
+        "TimeCreate": "2024-09-01",
+        "TimeExam": "120",
+        "Type": "Full Test",
+        "ExamTypeID": 1,
+        "UserID": 2
+    },
+    {
+        "ID": 2,
+        "Title": "TOEIC Full Test 2",
+        "TimeCreate": "2024-09-15",
+        "TimeExam": "120",
+        "Type": "Full Test",
+        "ExamTypeID": 1,
+        "UserID": 2
+    },
+    {
+        "ID": 3,
+        "Title": "Practice Listening",
+        "TimeCreate": "2024-09-20",
+        "TimeExam": "120",
+        "Type": "Practice",
+        "ExamTypeID": 2,
+        "UserID": 2
+    },
+    {
+        "ID": 4,
+        "Title": "Practice Reading",
+        "TimeCreate": "2024-09-21",
+        "TimeExam": "75",
+        "Type": "Practice",
+        "ExamTypeID": 2,
+        "UserID": 2
+    },
+    {
+        "ID": 5,
+        "Title": "Mini TOEIC Test",
+        "TimeCreate": "2024-10-01",
+        "TimeExam": "60",
+        "Type": "Mock Test",
+        "ExamTypeID": 2,
+        "UserID": 2
+    },
+    {
+        "ID": 6,
+        "Title": "Grammar Check 1",
+        "TimeCreate": "2024-10-05",
+        "TimeExam": "60",
+        "Type": "Grammar",
+        "ExamTypeID": 2,
+        "UserID": 2
+    },
+    {
+        "ID": 7,
+        "Title": "Vocabulary Practice",
+        "TimeCreate": "2024-10-07",
+        "TimeExam": "60",
+        "Type": "Vocab",
+        "ExamTypeID": 2,
+        "UserID": 2
+    },
+    {
+        "ID": 8,
+        "Title": "Listening Only",
+        "TimeCreate": "2024-10-10",
+        "TimeExam": "45",
+        "Type": "Listening",
+        "ExamTypeID": 2,
+        "UserID": 2
+    }
+]

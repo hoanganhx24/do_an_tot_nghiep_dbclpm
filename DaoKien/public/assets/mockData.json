@@ -1,0 +1,791 @@
+{
+    "roles": [
+        {
+            "id": 1,
+            "title": "Admin",
+            "description": "Quản trị viên hệ thống",
+            "status": 1
+        },
+        {
+            "id": 2,
+            "title": "Student",
+            "description": "Người học luyện thi TOEIC",
+            "status": 1
+        }
+    ],
+    "users": [
+        {
+            "id": 1,
+            "email": "admin@toeic.com",
+            "password": "123456",
+            "name": "Admin User",
+            "sex": "Nam",
+            "birthday": "1990-01-01",
+            "phone": "0123456789",
+            "address": "Hà Nội",
+            "createAt": "2024-10-01",
+            "token": "",
+            "_comment": "Token sẽ được tạo khi đăng nhập",
+            "status": 1
+        },
+        {
+            "id": 2,
+            "email": "student1@toeic.com",
+            "password": "123456",
+            "name": "Nguyễn Văn A",
+            "sex": "Nam",
+            "birthday": "2000-05-12",
+            "phone": "0987654321",
+            "address": "TP. HCM",
+            "createAt": "2024-10-10",
+            "aim": 850,
+            "token": "",
+            "status": 1
+        }
+    ],
+    "userRoles": [
+        {
+            "id": 1,
+            "assignAt": "2024-10-01",
+            "UserId": 1,
+            "RoleId": 1
+        },
+        {
+            "id": 2,
+            "assignAt": "2024-10-10",
+            "UserId": 2,
+            "RoleId": 2
+        }
+    ],
+    "students": [
+        {
+            "id": 1,
+            "targetScore": 800,
+            "goalDate": "2025-12-01",
+            "dailyStudyMinutes": 60,
+            "lastActiveAt": "2025-10-20",
+            "placementLevel": "B2",
+            "UserId": 2
+        }
+    ],
+    "exams": [
+        {
+            "id": 1,
+            "title": "New Economy TOEIC Test 1",
+            "timeCreate": "2025-01-15",
+            "timeExam": 120,
+            "timeStart": "2025-01-20 09:00",
+            "timeEnd": "2025-01-20 11:00",
+            "numParts": 7,
+            "totalQuestion": 200,
+            "readingQuestion": 100,
+            "listeningQuestion": 100,
+            "partDistribution": [
+                {
+                    "part": "Part 1",
+                    "questionCount": 6,
+                    "questionType": [
+                        "Photographs"
+                    ]
+                },
+                {
+                    "part": "Part 2",
+                    "questionCount": 25,
+                    "questionType": [
+                        "Question-Response"
+                    ]
+                },
+                {
+                    "part": "Part 3",
+                    "questionCount": 39,
+                    "questionType": [
+                        "Short Conversations"
+                    ]
+                },
+                {
+                    "part": "Part 4",
+                    "questionCount": 30,
+                    "questionType": [
+                        "Short Talks"
+                    ]
+                },
+                {
+                    "part": "Part 5",
+                    "questionCount": 30,
+                    "questionType": [
+                        "Incomplete Sentences"
+                    ]
+                },
+                {
+                    "part": "Part 6",
+                    "questionCount": 16,
+                    "questionType": [
+                        "Text Completion"
+                    ]
+                },
+                {
+                    "part": "Part 7",
+                    "questionCount": 54,
+                    "questionType": [
+                        "Reading Comprehension",
+                        "Single Passages",
+                        "Double Passages"
+                    ]
+                }
+            ],
+            "typeExam": "Full Test",
+            "status": 1
+        },
+        {
+            "id": 2,
+            "title": "New Economy TOEIC Test 2",
+            "timeCreate": "2025-01-25",
+            "timeExam": 120,
+            "timeStart": "2025-01-30 09:00",
+            "timeEnd": "2025-01-30 11:00",
+            "numParts": 7,
+            "totalQuestion": 200,
+            "readingQuestion": 100,
+            "listeningQuestion": 100,
+            "partDistribution": [
+                {
+                    "part": "Part 1",
+                    "questionCount": 6,
+                    "questionType": [
+                        "Photographs"
+                    ]
+                },
+                {
+                    "part": "Part 2",
+                    "questionCount": 25,
+                    "questionType": [
+                        "Question-Response"
+                    ]
+                },
+                {
+                    "part": "Part 3",
+                    "questionCount": 39,
+                    "questionType": [
+                        "Short Conversations"
+                    ]
+                },
+                {
+                    "part": "Part 4",
+                    "questionCount": 30,
+                    "questionType": [
+                        "Short Talks"
+                    ]
+                },
+                {
+                    "part": "Part 5",
+                    "questionCount": 30,
+                    "questionType": [
+                        "Incomplete Sentences"
+                    ]
+                },
+                {
+                    "part": "Part 6",
+                    "questionCount": 16,
+                    "questionType": [
+                        "Text Completion"
+                    ]
+                },
+                {
+                    "part": "Part 7",
+                    "questionCount": 54,
+                    "questionType": [
+                        "Reading Comprehension"
+                    ]
+                }
+            ],
+            "typeExam": "Full Test",
+            "status": 1
+        },
+        {
+            "id": 5,
+            "title": "Mini Test - Listening Section",
+            "timeCreate": "2025-03-01",
+            "timeExam": 45,
+            "timeStart": "2025-03-05 10:00",
+            "timeEnd": "2025-03-05 10:45",
+            "numParts": 4,
+            "totalQuestion": 50,
+            "readingQuestion": 0,
+            "listeningQuestion": 50,
+            "partDistribution": [
+                {
+                    "part": "Part 1",
+                    "questionCount": 6,
+                    "questionType": [
+                        "Photographs"
+                    ]
+                },
+                {
+                    "part": "Part 2",
+                    "questionCount": 12,
+                    "questionType": [
+                        "Question-Response"
+                    ]
+                },
+                {
+                    "part": "Part 3",
+                    "questionCount": 16,
+                    "questionType": [
+                        "Short Conversations"
+                    ]
+                },
+                {
+                    "part": "Part 4",
+                    "questionCount": 16,
+                    "questionType": [
+                        "Short Talks"
+                    ]
+                }
+            ],
+            "typeExam": "Mini Test",
+            "status": 1
+        },
+        {
+            "id": 6,
+            "title": "Mini Test - Reading Section",
+            "timeCreate": "2025-03-10",
+            "timeExam": 45,
+            "timeStart": "2025-03-12 14:00",
+            "timeEnd": "2025-03-12 14:45",
+            "numParts": 3,
+            "totalQuestion": 50,
+            "readingQuestion": 50,
+            "listeningQuestion": 0,
+            "partDistribution": [
+                {
+                    "part": "Part 5",
+                    "questionCount": 15,
+                    "questionType": [
+                        "Incomplete Sentences"
+                    ]
+                },
+                {
+                    "part": "Part 6",
+                    "questionCount": 10,
+                    "questionType": [
+                        "Text Completion"
+                    ]
+                },
+                {
+                    "part": "Part 7",
+                    "questionCount": 25,
+                    "questionType": [
+                        "Reading Comprehension"
+                    ]
+                }
+            ],
+            "typeExam": "Mini Test",
+            "status": 1
+        }
+    ],
+    "passages": [
+        {
+            "id": 1,
+            "type": "Listening",
+            "part": 3,
+            "audioUrl": "audio/part3_1.mp3",
+            "script": "W: How was your trip to Chicago? M: It was great, but the flight was delayed for an hour.",
+            "imageUrl": "",
+            "status": 1
+        },
+        {
+            "id": 2,
+            "type": "Listening",
+            "part": 4,
+            "audioUrl": "audio/part4_1.mp3",
+            "script": "Welcome to the morning news. Today we’ll discuss the upcoming community festival...",
+            "imageUrl": "",
+            "status": 1
+        },
+        {
+            "id": 3,
+            "type": "Reading",
+            "part": 6,
+            "audioUrl": "",
+            "script": "To: All staff\nSubject: Meeting Reschedule\nThe staff meeting originally planned for Monday has been moved to Wednesday at 2 PM.",
+            "imageUrl": "",
+            "status": 1
+        },
+        {
+            "id": 4,
+            "type": "Reading",
+            "part": 7,
+            "audioUrl": "",
+            "script": "Dear valued customer,\nThank you for purchasing from GreenTech. Your order will be delivered within 5 business days.",
+            "imageUrl": "",
+            "status": 1
+        }
+    ],
+    "questions": [
+        {
+            "id": 1,
+            "section": "Listening",
+            "type": "Part 1",
+            "PassageId": null,
+            "audioUrl": "audio/part1_1.mp3",
+            "imageUrl": "image/part1_1.jpg",
+            "questionText": "Where is the man standing?",
+            "status": 1,
+            "explain": "The man is near a building, as described in the conversation."
+        },
+        {
+            "id": 2,
+            "section": "Listening",
+            "type": "Part 2",
+            "PassageId": null,
+            "audioUrl": "audio/part2_1.mp3",
+            "imageUrl": "",
+            "questionText": "Who is responsible for organizing the meeting?",
+            "status": 1,
+            "explain": "The woman mentions that she will organize the meeting."
+        },
+        {
+            "id": 3,
+            "section": "Listening",
+            "type": "Part 3",
+            "PassageId": 1,
+            "audioUrl": "",
+            "imageUrl": "",
+            "questionText": "What are the speakers mainly discussing?",
+            "status": 1,
+            "explain": "They are talking about the man’s recent trip to Chicago."
+        },
+        {
+            "id": 4,
+            "section": "Listening",
+            "type": "Part 3",
+            "PassageId": 1,
+            "audioUrl": "",
+            "imageUrl": "",
+            "questionText": "What does the man say about his flight?",
+            "status": 1,
+            "explain": "He says his flight was delayed for an hour."
+        },
+        {
+            "id": 5,
+            "section": "Listening",
+            "type": "Part 4",
+            "PassageId": 2,
+            "audioUrl": "",
+            "imageUrl": "",
+            "questionText": "What event is being mentioned in the announcement?",
+            "status": 1,
+            "explain": "It’s about the upcoming community festival."
+        },
+        {
+            "id": 6,
+            "section": "Listening",
+            "type": "Part 4",
+            "PassageId": 2,
+            "audioUrl": "",
+            "imageUrl": "",
+            "questionText": "When will the event take place?",
+            "status": 1,
+            "explain": "The news mentions it will take place this weekend."
+        },
+        {
+            "id": 7,
+            "section": "Reading",
+            "type": "Part 5",
+            "PassageId": null,
+            "audioUrl": "",
+            "imageUrl": "",
+            "questionText": "She ___ to the office every day.",
+            "status": 1,
+            "explain": "The subject 'She' requires a singular verb form → 'walks'."
+        },
+        {
+            "id": 8,
+            "section": "Reading",
+            "type": "Part 6",
+            "PassageId": 3,
+            "audioUrl": "",
+            "imageUrl": "",
+            "questionText": "When was the meeting originally planned?",
+            "status": 1,
+            "explain": "The message states it was originally planned for Monday."
+        },
+        {
+            "id": 9,
+            "section": "Reading",
+            "type": "Part 6",
+            "PassageId": 3,
+            "audioUrl": "",
+            "imageUrl": "",
+            "questionText": "When is the new meeting time?",
+            "status": 1,
+            "explain": "The email says the meeting is now scheduled for Wednesday at 2 PM."
+        },
+        {
+            "id": 10,
+            "section": "Reading",
+            "type": "Part 7",
+            "PassageId": 4,
+            "audioUrl": "",
+            "imageUrl": "",
+            "questionText": "What type of document is this?",
+            "status": 1,
+            "explain": "It’s a customer notification email."
+        },
+        {
+            "id": 11,
+            "section": "Reading",
+            "type": "Part 7",
+            "PassageId": 4,
+            "audioUrl": "",
+            "imageUrl": "",
+            "questionText": "How long will it take to receive the order?",
+            "status": 1,
+            "explain": "The message says delivery will be within 5 business days."
+        }
+    ],
+    "choices": [
+        {
+            "id": 1,
+            "content": "In front of a bus",
+            "isAnswer": false,
+            "QuestionsId": 1
+        },
+        {
+            "id": 2,
+            "content": "Near a building",
+            "isAnswer": true,
+            "QuestionsId": 1
+        },
+        {
+            "id": 3,
+            "content": "Behind a desk",
+            "isAnswer": false,
+            "QuestionsId": 1
+        },
+        {
+            "id": 4,
+            "content": "Mr. Kim",
+            "isAnswer": false,
+            "QuestionsId": 2
+        },
+        {
+            "id": 5,
+            "content": "The woman",
+            "isAnswer": true,
+            "QuestionsId": 2
+        },
+        {
+            "id": 6,
+            "content": "The director",
+            "isAnswer": false,
+            "QuestionsId": 2
+        },
+        {
+            "id": 7,
+            "content": "A business trip",
+            "isAnswer": true,
+            "QuestionsId": 3
+        },
+        {
+            "id": 8,
+            "content": "A conference",
+            "isAnswer": false,
+            "QuestionsId": 3
+        },
+        {
+            "id": 9,
+            "content": "A job interview",
+            "isAnswer": false,
+            "QuestionsId": 3
+        },
+        {
+            "id": 10,
+            "content": "It was delayed",
+            "isAnswer": true,
+            "QuestionsId": 4
+        },
+        {
+            "id": 11,
+            "content": "It was canceled",
+            "isAnswer": false,
+            "QuestionsId": 4
+        },
+        {
+            "id": 12,
+            "content": "A music concert",
+            "isAnswer": false,
+            "QuestionsId": 5
+        },
+        {
+            "id": 13,
+            "content": "A community festival",
+            "isAnswer": true,
+            "QuestionsId": 5
+        },
+        {
+            "id": 14,
+            "content": "A city marathon",
+            "isAnswer": false,
+            "QuestionsId": 5
+        },
+        {
+            "id": 15,
+            "content": "Next Monday",
+            "isAnswer": false,
+            "QuestionsId": 6
+        },
+        {
+            "id": 16,
+            "content": "This weekend",
+            "isAnswer": true,
+            "QuestionsId": 6
+        },
+        {
+            "id": 17,
+            "content": "Next weekend",
+            "isAnswer": false,
+            "QuestionsId": 6
+        },
+        {
+            "id": 18,
+            "content": "walk",
+            "isAnswer": false,
+            "QuestionsId": 7
+        },
+        {
+            "id": 19,
+            "content": "walks",
+            "isAnswer": true,
+            "QuestionsId": 7
+        },
+        {
+            "id": 20,
+            "content": "walking",
+            "isAnswer": false,
+            "QuestionsId": 7
+        },
+        {
+            "id": 21,
+            "content": "Monday",
+            "isAnswer": true,
+            "QuestionsId": 8
+        },
+        {
+            "id": 22,
+            "content": "Tuesday",
+            "isAnswer": false,
+            "QuestionsId": 8
+        },
+        {
+            "id": 23,
+            "content": "Wednesday at 2 PM",
+            "isAnswer": true,
+            "QuestionsId": 9
+        },
+        {
+            "id": 24,
+            "content": "Thursday at 10 AM",
+            "isAnswer": false,
+            "QuestionsId": 9
+        },
+        {
+            "id": 25,
+            "content": "An invoice",
+            "isAnswer": false,
+            "QuestionsId": 10
+        },
+        {
+            "id": 26,
+            "content": "A customer notification email",
+            "isAnswer": true,
+            "QuestionsId": 10
+        },
+        {
+            "id": 27,
+            "content": "3 days",
+            "isAnswer": false,
+            "QuestionsId": 11
+        },
+        {
+            "id": 28,
+            "content": "5 business days",
+            "isAnswer": true,
+            "QuestionsId": 11
+        }
+    ],
+    "examDetails": [
+        {
+            "id": 1,
+            "questionOrder": 1,
+            "scoreQuestion": 5,
+            "QuestionsId": 1,
+            "ExamId": 1
+        },
+        {
+            "id": 2,
+            "questionOrder": 2,
+            "scoreQuestion": 5,
+            "QuestionsId": 2,
+            "ExamId": 1
+        },
+        {
+            "id": 3,
+            "questionOrder": 3,
+            "scoreQuestion": 5,
+            "QuestionsId": 3,
+            "ExamId": 1
+        },
+        {
+            "id": 4,
+            "questionOrder": 4,
+            "scoreQuestion": 5,
+            "QuestionsId": 4,
+            "ExamId": 1
+        },
+        {
+            "id": 5,
+            "questionOrder": 5,
+            "scoreQuestion": 5,
+            "QuestionsId": 5,
+            "ExamId": 1
+        },
+        {
+            "id": 6,
+            "questionOrder": 6,
+            "scoreQuestion": 5,
+            "QuestionsId": 6,
+            "ExamId": 1
+        },
+        {
+            "id": 7,
+            "questionOrder": 7,
+            "scoreQuestion": 5,
+            "QuestionsId": 7,
+            "ExamId": 1
+        },
+        {
+            "id": 8,
+            "questionOrder": 8,
+            "scoreQuestion": 5,
+            "QuestionsId": 8,
+            "ExamId": 1
+        },
+        {
+            "id": 9,
+            "questionOrder": 9,
+            "scoreQuestion": 5,
+            "QuestionsId": 9,
+            "ExamId": 1
+        },
+        {
+            "id": 10,
+            "questionOrder": 10,
+            "scoreQuestion": 5,
+            "QuestionsId": 10,
+            "ExamId": 1
+        },
+        {
+            "id": 11,
+            "questionOrder": 11,
+            "scoreQuestion": 5,
+            "QuestionsId": 11,
+            "ExamId": 1
+        }
+    ],
+    "results": [
+        {
+            "id": 1,
+            "readingScore": 400,
+            "listeningScore": 350,
+            "totalScore": 750,
+            "startAt": "2025-02-10 08:00",
+            "finishAt": "2025-02-10 10:00",
+            "timeTest": 120,
+            "correctQuestion": 150,
+            "incorrectQuestion": 50,
+            "skipQuestion": 0,
+            "status": 1,
+            "StudentUserId": 2,
+            "ExamId": 1
+        },
+        {
+            "id": 2,
+            "readingScore": 350,
+            "listeningScore": 300,
+            "totalScore": 650,
+            "startAt": "2025-02-10 19:00",
+            "finishAt": "2025-02-10 20:45",
+            "timeTest": 115,
+            "correctQuestion": 120,
+            "incorrectQuestion": 80,
+            "skipQuestion": 0,
+            "status": 1,
+            "StudentUserId": 2,
+            "ExamId": 1
+        }
+    ],
+    "resultDetails": [
+        {
+            "id": 1,
+            "selectedAnswer": "Near a building",
+            "isCorrect": true,
+            "QuestionsId": 1,
+            "ResultId": 1
+        },
+        {
+            "id": 2,
+            "selectedAnswer": "walks",
+            "isCorrect": true,
+            "QuestionsId": 2,
+            "ResultId": 1
+        }
+    ],
+    "comments": [
+        {
+            "id": 1,
+            "content": "Đề thi này khá sát thực tế!",
+            "createAt": "2025-02-11",
+            "parentId": null,
+            "status": 1,
+            "ExamId": 1,
+            "StudentUserId": 2
+        },
+        {
+            "id": 2,
+            "content": "Mình thấy Part 7 hơi khó quá.",
+            "createAt": "2025-03-05",
+            "parentId": null,
+            "status": 1,
+            "ExamId": 1,
+            "StudentUserId": 3
+        },
+        {
+            "id": 3,
+            "content": "Đúng rồi, mình cũng cảm thấy khó.",
+            "createAt": "2025-03-05",
+            "parentId": 2,
+            "status": 1,
+            "ExamId": 1,
+            "StudentUserId": 4
+        },
+        {
+            "id": 4,
+            "content": "Có ai muốn chia sẻ mẹo Part 5 không?",
+            "createAt": "2025-03-10",
+            "parentId": null,
+            "status": 1,
+            "ExamId": 1,
+            "StudentUserId": 5
+        },
+        {
+            "id": 5,
+            "content": "Mình hay học theo câu hỏi từ vựng trước.",
+            "createAt": "2025-03-10",
+            "parentId": 4,
+            "status": 1,
+            "ExamId": 1,
+            "StudentUserId": 2
+        }
+    ]
+}

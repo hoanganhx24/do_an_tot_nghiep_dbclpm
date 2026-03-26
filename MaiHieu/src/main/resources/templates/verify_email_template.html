@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mã xác thực tài khoản</title>
+    <!-- Dùng style inline/simple để tương thích hầu hết email client -->
+    <style>
+        body{margin:0;background:#f5f6fa;font-family:Arial,Helvetica,sans-serif;color:#333}
+        .wrap{max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;
+            box-shadow:0 6px 18px rgba(0,0,0,.08)}
+        .hdr{background:#4f70e8;color:#fff;text-align:center;padding:20px}
+        .hdr h1{margin:0;font-size:20px}
+        .cnt{padding:28px 24px;line-height:1.6}
+        .otp{margin:18px 0;padding:14px;border:2px dashed #4f70e8;border-radius:10px;
+            text-align:center;font-size:24px;font-weight:700;letter-spacing:4px;color:#2a3ea0;
+            background:#eef2ff}
+        .btn{display:inline-block;background:#4f70e8;color:#fff !important;text-decoration:none;
+            padding:10px 16px;border-radius:8px;margin-top:10px}
+        .muted{color:#666;font-size:13px}
+        .ftr{padding:16px;text-align:center;background:#fafafa;color:#888;font-size:12px}
+        @media (max-width:480px){.cnt{padding:20px}}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="hdr">
+        <h1>Xác thực tài khoản</h1>
+    </div>
+
+    <div class="cnt">
+        <p>Xin chào,</p>
+        <p>Bạn đang đăng ký bằng email: <strong th:text="${email}"></strong>.</p>
+        <p>Vui lòng nhập mã xác thực bên dưới để hoàn tất quá trình đăng ký:</p>
+
+        <!-- Mã OTP do bạn truyền qua DataMailDTO.props.get("otp") -->
+        <div class="otp" th:text="${otp}"></div>
+
+        <!-- Nếu bạn có trang xác thực qua link, có thể bật nút này -->
+        <!-- <a class="btn" href="https://your-frontend-app.com/verify?email=${email}&code=${otp}">
+          Xác nhận ngay
+        </a> -->
+
+        <p class="muted">
+            Mã có hiệu lực trong <strong>5 phút</strong>. Nếu bạn không thực hiện yêu cầu này,
+            vui lòng bỏ qua email.
+        </p>
+
+        <p>Trân trọng,<br/><strong>Đội ngũ hỗ trợ</strong></p>
+    </div>
+
+    <div class="ftr">
+        © <span th:text="${year}"></span> — Hệ thống của bạn. Mọi quyền được bảo lưu.
+    </div>
+</div>
+</body>
+</html>

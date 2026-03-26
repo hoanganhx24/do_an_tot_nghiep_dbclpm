@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin truy cập hệ thống</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            background-color: #f4f6f8;
+            font-family: 'Roboto', sans-serif;
+            color: #333333;
+            font-size: 16px;
+            padding: 40px 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #1976d2;
+            margin-bottom: 24px;
+        }
+
+        p {
+            margin: 12px 0;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        .info-table td {
+            padding: 10px;
+            vertical-align: top;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #1976d2;
+            width: 180px;
+        }
+
+        .value {
+            color: #555;
+        }
+
+        .note {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ff9800;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 th:text="'Xin chào, ' + ${name} + '!'"></h2>
+
+    <p>Chúng tôi gửi bạn thông tin truy cập hệ thống:</p>
+
+    <table class="info-table">
+        <tr>
+            <td class="label">📧 Tên truy cập:</td>
+            <td class="value" th:text="${email}"></td>
+        </tr>
+        <tr>
+            <td class="label">🔒 Mật khẩu tạm thời:</td>
+            <td class="value" th:text="${password}"></td>
+        </tr>
+    </table>
+
+    <div class="note">
+        <p><strong>Lưu ý:</strong> Đây là mật khẩu mặc định được tạo bởi hệ thống và có hiệu lực trong vòng <strong>24h</strong>.</p>
+        <p>Vui lòng đổi lại mật khẩu sau khi đăng nhập để bảo mật thông tin cá nhân.</p>
+    </div>
+
+    <div class="footer">
+        Đây là email tự động, vui lòng không trả lời.
+    </div>
+</div>
+</body>
+</html>

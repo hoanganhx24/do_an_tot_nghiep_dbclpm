@@ -1,0 +1,79 @@
+.question {
+  margin: 10px 0;
+
+  &__question {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    &--number {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: #f2f7fb;
+      color: #2493d4;
+      font-weight: 800;
+    }
+
+    &--title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+  }
+
+  &__option {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 10px;
+
+    &--number {
+      background-color: #96a1a8 !important;
+      color: white;
+    }
+
+    &:hover {
+      cursor: pointer;
+      background-color: #ddd;
+
+      .question__option--number {
+        background-color: #4e4a4a !important;
+      }
+    }
+  }
+}
+
+.ant-radio-wrapper.question__option.css-dev-only-do-not-override-1cj4ms, .ant-checkbox-wrapper.question__option.css-dev-only-do-not-override-1cj4ms {
+  width: 650px !important;
+}
+
+.ant-radio-label, .ant-checkbox-label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ant-radio.ant-wave-target {
+  display: none;
+}
+
+.ant-radio-wrapper.ant-radio-wrapper-checked.question__option.css-dev-only-do-not-override-198drv2, .ant-checkbox-wrapper.ant-checkbox-wrapper-checked.question__option.css-dev-only-do-not-override-198drv2 {
+    background-color: #c8e8fa;
+  .question__option--number {
+    background-color: #2462d4 !important;
+    color: white;
+  }
+
+  .question__option--title {
+    color: #2462d4 !important;
+  }
+}
+
+

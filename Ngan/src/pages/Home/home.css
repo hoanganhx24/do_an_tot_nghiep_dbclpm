@@ -1,0 +1,276 @@
+.content1 {
+padding: 0 50px;
+}
+
+
+.hero1 {
+width: 100%;
+margin-top: 40px;
+text-align: center;
+padding: 90px 20px;
+background: linear-gradient(180deg, #e6f4ff, #ffffff);
+margin-bottom: 40px;
+border-radius: 16px;
+}
+
+
+.hero1 h1 {
+font-size: 38px;
+color: #1677ff;
+}
+
+
+.hero1 p {
+font-size: 18px;
+color: #555;
+margin-bottom: 24px;
+}
+
+
+.section1 {
+margin-bottom: 48px;
+}
+
+
+.section1 h2 {
+color: #1677ff;
+margin-bottom: 24px;
+}
+
+
+.ant-card {
+border-radius: 16px;
+box-shadow: 0 8px 24px rgba(22, 119, 255, 0.08);
+}
+
+
+.ant-card-head-title {
+color: #1677ff;
+font-weight: 600;
+}
+
+
+.ant-btn-primary {
+background: #1677ff;
+border-color: #1677ff;
+}
+
+
+.ant-btn-primary:hover {
+background: #4096ff;
+border-color: #4096ff;
+}
+
+
+.footer1 {
+text-align: center;
+background: #e6f4ff;
+color: #1677ff;
+font-weight: 500;
+}
+
+/* SECTION */
+.features-section {
+  padding: 80px 20px;
+  background: linear-gradient(180deg, #f0f7ff, #ffffff);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* HEADER */
+.section-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.section-title {
+  font-size: 34px;
+  font-weight: 700;
+  color: #1677ff;
+  margin-bottom: 12px;
+}
+
+.section-description {
+  font-size: 18px;
+  color: #5f6c7b;
+}
+
+/* GRID */
+.features-grid {
+  display: flex;
+  flex-wrap: wrap;        /* TỰ ĐỘNG XUỐNG DÒNG */
+  justify-content: center;
+  gap: 24px;
+}
+
+
+/* CARD */
+.feature-card {
+  border-radius: 20px;
+  text-align: center;
+  padding: 32px 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(22, 119, 255, 0.08);
+  transition: all 0.3s ease;
+  width: 280px;
+  height: 250px;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(22, 119, 255, 0.15);
+}
+
+/* ICON */
+.feature-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+/* TITLE */
+.feature-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1677ff;
+  margin-bottom: 8px;
+}
+
+/* DESCRIPTION */
+.feature-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .features-section {
+    padding: 60px 16px;
+  }
+
+  .section-title {
+    font-size: 28px;
+  }
+}
+
+/* HERO SECTION */
+.hero-section {
+  align-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #65bbfc, #ffffff);
+  width: 100%;
+  height: 100vh;
+  margin: 50px 0;
+}
+
+.hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* BADGE */
+.hero-badge {
+  display: inline-block;
+  background: #e6f4ff;
+  color: #1677ff;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 999px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.15);
+}
+
+/* TITLE */
+.hero-title {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+.hero-title .highlight {
+  color: #1677ff;
+  background: linear-gradient(90deg, #69b1ff, #1677ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* DESCRIPTION */
+.hero-description {
+  font-size: 20px;
+  color: #475569;
+  max-width: 700px;
+  margin: 0 auto 36px;
+}
+
+/* ACTION BUTTONS */
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 64px;
+}
+
+.hero-actions .ant-btn-primary {
+  background: #1677ff;
+  border-color: #1677ff;
+  font-weight: 600;
+}
+
+.hero-actions .ant-btn-primary:hover {
+  background: #4096ff;
+  border-color: #4096ff;
+}
+
+.hero-actions .ant-btn {
+  border-radius: 10px;
+  padding: 0 28px;
+}
+
+/* STATS */
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  min-width: 120px;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1677ff;
+}
+
+.stat-label {
+  font-size: 16px;
+  color: #64748b;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 36px;
+  }
+
+  .hero-description {
+    font-size: 18px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .hero-stats {
+    gap: 24px;
+  }
+}
+

@@ -1,0 +1,50 @@
+[
+    {
+        "ID": 1,
+        "UserID": 1,
+        "RoleID": 1,
+        "AssignedAt": "2024-01-10"
+    },
+    {
+        "ID": 2,
+        "UserID": 2,
+        "RoleID": 2,
+        "AssignedAt": "2024-01-12"
+    },
+    {
+        "ID": 3,
+        "UserID": 3,
+        "RoleID": 3,
+        "AssignedAt": "2024-01-20"
+    },
+    {
+        "ID": 4,
+        "UserID": 4,
+        "RoleID": 3,
+        "AssignedAt": "2024-02-10"
+    },
+    {
+        "ID": 5,
+        "UserID": 5,
+        "RoleID": 3,
+        "AssignedAt": "2024-03-05"
+    },
+    {
+        "ID": 6,
+        "UserID": 6,
+        "RoleID": 3,
+        "AssignedAt": "2024-03-15"
+    },
+    {
+        "ID": 7,
+        "UserID": 7,
+        "RoleID": 4,
+        "AssignedAt": "2024-03-20"
+    },
+    {
+        "ID": 8,
+        "UserID": 8,
+        "RoleID": 6,
+        "AssignedAt": "2024-04-01"
+    }
+]
