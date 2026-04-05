@@ -3,6 +3,8 @@ import './App.css';
 import AllRoutes from "./components/AllRoutes";
 import { parseJwt } from './components/function';
 
+const AUTH_ORIGIN = process.env.REACT_APP_AUTH_ORIGIN || "http://localhost:5173";
+
 function App() {
   const [token, setToken] = useState(null)
 
@@ -11,14 +13,14 @@ function App() {
     if (window.opener) {
       window.opener.postMessage(
         { type: "ready" },
-        "http://localhost:5173"
+        AUTH_ORIGIN
       );
-      console.log("📤 Sent 'ready' message to 5173");
+      console.log("📤 Sent 'ready' message to", AUTH_ORIGIN);
     }
 
     // Lắng nghe message từ cửa sổ cha
     const handleMessage = (event) => {
-      if (event.origin !== "http://localhost:5173") return;
+      if (event.origin !== AUTH_ORIGIN) return;
 
       const { type, accessToken } = event.data;
 

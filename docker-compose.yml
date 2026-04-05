@@ -1,0 +1,130 @@
+name: toeic-platform
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: toeic-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
+      TZ: ${TZ:-Asia/Ho_Chi_Minh}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  node-backend:
+    build:
+      context: ./TrinhHieu/toeic-exam-backend
+      dockerfile: Dockerfile
+    container_name: toeic-node-backend
+    restart: unless-stopped
+    env_file:
+      - ./.env.docker
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      API_PREFIX: /api/exam
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: db_do_an_tot_nghiep
+      CORS_ORIGIN: http://localhost:5173,http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
+
+  spring-backend:
+    build:
+      context: ./MaiHieu
+      dockerfile: Dockerfile
+    container_name: toeic-spring-backend
+    restart: unless-stopped
+    env_file:
+      - ./.env.docker
+    environment:
+      SERVER_PORT: 8081
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/db_do_an_tot_nghiep
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 10
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      JWT_SIGNER_KEY: ${JWT_SECRET}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      SPRING_MAIL_PROTOCOL: ${SPRING_MAIL_PROTOCOL}
+      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY}
+      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION}
+      MERRIAM_API_KEY: ${MERRIAM_API_KEY}
+      TZ: ${TZ:-Asia/Ho_Chi_Minh}
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ': > /dev/tcp/localhost/8081'"]
+      interval: 20s
+      timeout: 8s
+      retries: 12
+      start_period: 45s
+
+  daokien-frontend:
+    build:
+      context: ./DaoKien
+      dockerfile: Dockerfile
+    container_name: toeic-daokien-frontend
+    restart: unless-stopped
+    env_file:
+      - ./.env.docker
+    environment:
+      VITE_API_BASE_URL: http://localhost:3001/api/exam
+      VITE_API_URL: http://localhost:3001/api/exam
+      VITE_ADMIN_TOKEN: ${VITE_ADMIN_TOKEN:-}
+      VITE_STUDENT_TOKEN: ${VITE_STUDENT_TOKEN:-}
+    ports:
+      - "5173:5173"
+    depends_on:
+      node-backend:
+        condition: service_healthy
+
+  ngan-frontend:
+    build:
+      context: ./Ngan
+      dockerfile: Dockerfile
+    container_name: toeic-ngan-frontend
+    restart: unless-stopped
+    env_file:
+      - ./.env.docker
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      REACT_APP_API_DOMAIN: http://localhost:8081/
+      REACT_APP_AUTH_ORIGIN: http://localhost:5173
+      WDS_SOCKET_PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      spring-backend:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

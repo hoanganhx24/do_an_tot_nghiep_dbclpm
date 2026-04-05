@@ -18,7 +18,7 @@ import commentRoutes from './presentation/routes/comment.routes';
 import mediaGroupRoutes from './presentation/routes/media-group.routes';
 import examTypeRoutes from './presentation/routes/exam-types.routes';
 import uploadRoutes from './presentation/routes/upload.route';
-import path from 'path/win32';
+import path from 'path';
 
 /**
  * TOEIC Exam Practice Backend Server

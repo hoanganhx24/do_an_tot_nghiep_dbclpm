@@ -1,6 +1,7 @@
 import { getAccessToken} from "../components/token";
 
-export const API_DOMAIN = "http://localhost:8081/";
+const apiDomain = process.env.REACT_APP_API_DOMAIN || "http://localhost:8081/";
+export const API_DOMAIN = apiDomain.endsWith("/") ? apiDomain : `${apiDomain}/`;
 
 export const get = async (path) => {
     const token = getAccessToken(); 
