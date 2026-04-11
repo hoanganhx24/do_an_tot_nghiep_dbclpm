@@ -1,0 +1,42 @@
+﻿
+> frontend@0.1.0 test
+> react-scripts test --watch=false --runInBand --coverage --testPathPattern src/services/.*Service.test.js --collectCoverageFrom=src/services/*.js --collectCoverageFrom=!src/services/*.test.js
+
+node.exe : [baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please update: `npm i 
+baseline-browser-mapping@latest -D`
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([baseline-brows...ping@late 
+   st -D`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+PASS src/services/AuthService.test.js
+PASS src/services/CourseService.test.js
+PASS src/services/ExerciseService.test.js
+PASS src/services/FirstTestService.test.js
+PASS src/services/StudyPlanService.test.js
+PASS src/services/VocaService.test.js
+PASS src/services/TeacherService.test.js
+PASS src/services/StudentService.test.js
+---------------------|---------|----------|---------|---------|-------------------
+File                 | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+---------------------|---------|----------|---------|---------|-------------------
+All files            |     100 |      100 |     100 |     100 |                   
+ AuthService.js      |     100 |      100 |     100 |     100 |                   
+ CourseService.js    |     100 |      100 |     100 |     100 |                   
+ ExerciseService.js  |     100 |      100 |     100 |     100 |                   
+ FirstTestService.js |     100 |      100 |     100 |     100 |                   
+ StudentService.js   |     100 |      100 |     100 |     100 |                   
+ StudyPlanService.js |     100 |      100 |     100 |     100 |                   
+ TeacherService.js   |     100 |      100 |     100 |     100 |                   
+ VocaService.js      |     100 |      100 |     100 |     100 |                   
+---------------------|---------|----------|---------|---------|-------------------
+
+Test Suites: 8 passed, 8 total
+Tests:       109 passed, 109 total
+Snapshots:   0 total
+Time:        4.142 s
+Ran all test suites matching /src\\services\\.*Service.test.js/i.
