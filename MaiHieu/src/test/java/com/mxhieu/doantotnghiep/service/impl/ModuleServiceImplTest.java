@@ -1,118 +1,163 @@
 package com.mxhieu.doantotnghiep.service.impl;
 
-import com.mxhieu.doantotnghiep.converter.LessonConverter;
+import com.mxhieu.doantotnghiep.Application;
 import com.mxhieu.doantotnghiep.converter.ModuleConverter;
 import com.mxhieu.doantotnghiep.dto.request.ModuleRequest;
 import com.mxhieu.doantotnghiep.dto.response.LessonResponse;
 import com.mxhieu.doantotnghiep.dto.response.ModuleResponse;
-import com.mxhieu.doantotnghiep.dto.response.TestResponse;
 import com.mxhieu.doantotnghiep.entity.CourseEntity;
 import com.mxhieu.doantotnghiep.entity.LessonEntity;
 import com.mxhieu.doantotnghiep.entity.ModuleEntity;
+import com.mxhieu.doantotnghiep.entity.TeacherprofileEntity;
 import com.mxhieu.doantotnghiep.entity.TestEntity;
+import com.mxhieu.doantotnghiep.entity.TrackEntity;
+import com.mxhieu.doantotnghiep.entity.UserEntity;
 import com.mxhieu.doantotnghiep.exception.AppException;
 import com.mxhieu.doantotnghiep.exception.ErrorCode;
+import com.mxhieu.doantotnghiep.repository.CourseRepository;
 import com.mxhieu.doantotnghiep.repository.LessonRepository;
 import com.mxhieu.doantotnghiep.repository.ModuleRepository;
+import com.mxhieu.doantotnghiep.repository.TeacheprofileRepository;
 import com.mxhieu.doantotnghiep.repository.TestRepository;
+import com.mxhieu.doantotnghiep.repository.TrackRepository;
+import com.mxhieu.doantotnghiep.repository.UserRepository;
 import com.mxhieu.doantotnghiep.service.LessonService;
 import com.mxhieu.doantotnghiep.service.TestService;
 import com.mxhieu.doantotnghiep.utils.ModuleType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = Application.class)
+@Transactional
+@Rollback
 class ModuleServiceImplTest {
 
-    @Mock
+    @Autowired
     private ModuleRepository moduleRepository;
 
-    @Mock
-    private ModuleConverter moduleConverter;
-
-    @Mock
-    private LessonService lessonService;
-
-    @Mock
+    @Autowired
     private LessonRepository lessonRepository;
 
-    @Mock
-    private LessonConverter lessonConverter;
-
-    @Mock
+    @Autowired
     private TestRepository testRepository;
 
-    @Mock
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private TrackRepository trackRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private TeacheprofileRepository teacheprofileRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @MockBean
+    private ModuleConverter moduleConverter;
+
+    @MockBean
+    private LessonService lessonService;
+
+    @MockBean
     private TestService testService;
 
-    @InjectMocks
+    @Autowired
     private ModuleServiceImpl service;
 
     @Test
     void addModule_shouldFlushOrderIndexWhenNewOrderIsInRange() {
         // Test Case ID: MAI-MDS-001
-        ModuleRequest request = ModuleRequest.builder().courseId(1).orderIndex(1L).build();
-        ModuleEntity entity = ModuleEntity.builder().orderIndex(1L).build();
+        CourseEntity course = createCourse("AddFlush");
+        ModuleEntity existing = moduleRepository.save(ModuleEntity.builder()
+                .course(course)
+                .orderIndex(1L)
+                .type(ModuleType.LESSON)
+                .build());
+        ModuleRequest request = ModuleRequest.builder().courseId(course.getId()).orderIndex(1L).build();
+        ModuleEntity entity = ModuleEntity.builder().course(course).orderIndex(1L).type(ModuleType.LESSON).build();
 
         when(moduleConverter.toEntity(request, ModuleEntity.class)).thenReturn(entity);
-        when(moduleRepository.getMaxOrder(1)).thenReturn(1L);
 
         service.addModule(request);
 
-        verify(moduleRepository).flushOrderIndex(1, 1L);
-        verify(moduleRepository).save(entity);
+        entityManager.flush();
+        entityManager.clear();
+        ModuleEntity shifted = moduleRepository.findById(existing.getId()).orElseThrow();
+        assertEquals(2L, shifted.getOrderIndex());
+        assertTrue(moduleRepository.findByCourseIdOrderByOrderIndex(course.getId()).stream()
+                .anyMatch(module -> module.getId() != null && module.getId().equals(entity.getId()) && module.getOrderIndex().equals(1L)));
     }
 
     @Test
     void addModule_shouldNotFlushWhenOrderIsAfterMaxOrder() {
         // Test Case ID: MAI-MDS-002
-        ModuleRequest request = ModuleRequest.builder().courseId(1).orderIndex(5L).build();
-        ModuleEntity entity = ModuleEntity.builder().orderIndex(5L).build();
+        CourseEntity course = createCourse("AddNoFlush");
+        ModuleEntity existing = moduleRepository.save(ModuleEntity.builder()
+                .course(course)
+                .orderIndex(1L)
+                .type(ModuleType.LESSON)
+                .build());
+        ModuleRequest request = ModuleRequest.builder().courseId(course.getId()).orderIndex(5L).build();
+        ModuleEntity entity = ModuleEntity.builder().course(course).orderIndex(5L).type(ModuleType.LESSON).build();
 
         when(moduleConverter.toEntity(request, ModuleEntity.class)).thenReturn(entity);
-        when(moduleRepository.getMaxOrder(1)).thenReturn(1L);
 
         service.addModule(request);
 
-        verify(moduleRepository).save(entity);
+        ModuleEntity unchanged = moduleRepository.findById(existing.getId()).orElseThrow();
+        assertEquals(1L, unchanged.getOrderIndex());
+        assertTrue(moduleRepository.findByCourseIdOrderByOrderIndex(course.getId()).stream()
+                .anyMatch(module -> module.getId() != null && module.getId().equals(entity.getId()) && module.getOrderIndex().equals(5L)));
     }
 
     @Test
     void getAll_shouldConvertEveryEntity() {
         // Test Case ID: MAI-MDS-003
-        ModuleEntity m1 = ModuleEntity.builder().id(1).course(CourseEntity.builder().id(9).build()).build();
-        ModuleEntity m2 = ModuleEntity.builder().id(2).course(CourseEntity.builder().id(9).build()).build();
+        CourseEntity course = createCourse("GetAll");
+        ModuleEntity m1 = moduleRepository.save(ModuleEntity.builder().course(course).orderIndex(1L).type(ModuleType.LESSON).build());
+        ModuleEntity m2 = moduleRepository.save(ModuleEntity.builder().course(course).orderIndex(2L).type(ModuleType.TEST).build());
 
-        when(moduleRepository.findAll()).thenReturn(List.of(m1, m2));
-        when(moduleConverter.toResponse(m1, ModuleResponse.class)).thenReturn(ModuleResponse.builder().id(1).build());
-        when(moduleConverter.toResponse(m2, ModuleResponse.class)).thenReturn(ModuleResponse.builder().id(2).build());
+        when(moduleConverter.toResponse(any(ModuleEntity.class), eq(ModuleResponse.class)))
+                .thenAnswer(invocation -> ModuleResponse.builder()
+                        .id(invocation.getArgument(0, ModuleEntity.class).getId())
+                        .build());
 
         List<ModuleResponse> result = service.getAll();
 
-        assertEquals(2, result.size());
+        assertTrue(result.size() >= 2);
+        assertTrue(result.stream().anyMatch(response -> response != null && m1.getId().equals(response.getId())));
+        assertTrue(result.stream().anyMatch(response -> response != null && m2.getId().equals(response.getId())));
     }
 
     @Test
     void getMaxOrder_shouldReturnRepositoryValuePlusOne() {
         // Test Case ID: MAI-MDS-004
-        when(moduleRepository.getMaxOrder(10)).thenReturn(6L);
+        CourseEntity course = createCourse("MaxOrder");
+        moduleRepository.save(ModuleEntity.builder().course(course).orderIndex(6L).type(ModuleType.LESSON).build());
 
-        Long actual = service.getMaxOrder(10);
+        Long actual = service.getMaxOrder(course.getId());
 
         assertEquals(7L, actual);
     }
@@ -120,15 +165,14 @@ class ModuleServiceImplTest {
     @Test
     void completedCups_shouldReturnThreeWhenCompletionIsHundredPercent() {
         // Test Case ID: MAI-MDS-005
-        LessonEntity lesson = LessonEntity.builder().id(1).build();
-        TestEntity test = TestEntity.builder().id(2).build();
+        ModuleEntity module = createModuleWithLessonAndTest("CupsThree");
+        LessonEntity lesson = module.getLessons().get(0);
+        TestEntity test = module.getTests().get(0);
 
-        when(lessonRepository.findByModuleId(1)).thenReturn(List.of(lesson));
-        when(testRepository.findByModuleId(1)).thenReturn(List.of(test));
-        when(lessonService.completedStar(1, 100)).thenReturn(3);
-        when(testService.commpletedStar(2, 100)).thenReturn(3);
+        when(lessonService.completedStar(lesson.getId(), 100)).thenReturn(3);
+        when(testService.commpletedStar(test.getId(), 100)).thenReturn(3);
 
-        int cups = service.completedCups(1, 100);
+        int cups = service.completedCups(module.getId(), 100);
 
         assertEquals(3, cups);
     }
@@ -136,15 +180,14 @@ class ModuleServiceImplTest {
     @Test
     void completedCups_shouldReturnTwoWhenCompletionBetweenFiftyAndNinetyNine() {
         // Test Case ID: MAI-MDS-006
-        LessonEntity lesson = LessonEntity.builder().id(1).build();
-        TestEntity test = TestEntity.builder().id(2).build();
+        ModuleEntity module = createModuleWithLessonAndTest("CupsTwo");
+        LessonEntity lesson = module.getLessons().get(0);
+        TestEntity test = module.getTests().get(0);
 
-        when(lessonRepository.findByModuleId(2)).thenReturn(List.of(lesson));
-        when(testRepository.findByModuleId(2)).thenReturn(List.of(test));
-        when(lessonService.completedStar(1, 200)).thenReturn(3);
-        when(testService.commpletedStar(2, 200)).thenReturn(0);
+        when(lessonService.completedStar(lesson.getId(), 200)).thenReturn(3);
+        when(testService.commpletedStar(test.getId(), 200)).thenReturn(0);
 
-        int cups = service.completedCups(2, 200);
+        int cups = service.completedCups(module.getId(), 200);
 
         assertEquals(2, cups);
     }
@@ -152,15 +195,14 @@ class ModuleServiceImplTest {
     @Test
     void completedCups_shouldReturnOneWhenCompletionIsPositiveButLow() {
         // Test Case ID: MAI-MDS-007
-        LessonEntity lesson = LessonEntity.builder().id(1).build();
-        TestEntity test = TestEntity.builder().id(2).build();
+        ModuleEntity module = createModuleWithLessonAndTest("CupsOne");
+        LessonEntity lesson = module.getLessons().get(0);
+        TestEntity test = module.getTests().get(0);
 
-        when(lessonRepository.findByModuleId(3)).thenReturn(List.of(lesson));
-        when(testRepository.findByModuleId(3)).thenReturn(List.of(test));
-        when(lessonService.completedStar(1, 300)).thenReturn(1);
-        when(testService.commpletedStar(2, 300)).thenReturn(0);
+        when(lessonService.completedStar(lesson.getId(), 300)).thenReturn(1);
+        when(testService.commpletedStar(test.getId(), 300)).thenReturn(0);
 
-        int cups = service.completedCups(3, 300);
+        int cups = service.completedCups(module.getId(), 300);
 
         assertEquals(1, cups);
     }
@@ -168,15 +210,14 @@ class ModuleServiceImplTest {
     @Test
     void completedCups_shouldReturnZeroWhenNoStarCollected() {
         // Test Case ID: MAI-MDS-008
-        LessonEntity lesson = LessonEntity.builder().id(1).build();
-        TestEntity test = TestEntity.builder().id(2).build();
+        ModuleEntity module = createModuleWithLessonAndTest("CupsZero");
+        LessonEntity lesson = module.getLessons().get(0);
+        TestEntity test = module.getTests().get(0);
 
-        when(lessonRepository.findByModuleId(4)).thenReturn(List.of(lesson));
-        when(testRepository.findByModuleId(4)).thenReturn(List.of(test));
-        when(lessonService.completedStar(1, 400)).thenReturn(0);
-        when(testService.commpletedStar(2, 400)).thenReturn(0);
+        when(lessonService.completedStar(lesson.getId(), 400)).thenReturn(0);
+        when(testService.commpletedStar(test.getId(), 400)).thenReturn(0);
 
-        int cups = service.completedCups(4, 400);
+        int cups = service.completedCups(module.getId(), 400);
 
         assertEquals(0, cups);
     }
@@ -184,25 +225,25 @@ class ModuleServiceImplTest {
     @Test
     void getResponseDetailList_shouldBuildLessonModuleDetail() {
         // Test Case ID: MAI-MDS-009
-        LessonEntity lesson = LessonEntity.builder().id(5).orderIndex(2).build();
-        ModuleEntity module = ModuleEntity.builder()
-                .id(1)
+        CourseEntity course = createCourse("DetailLesson");
+        ModuleEntity module = moduleRepository.save(ModuleEntity.builder()
+                .course(course)
                 .type(ModuleType.LESSON)
                 .orderIndex(1L)
-                .lessons(List.of(lesson))
-                .tests(List.of())
-                .build();
+                .lessons(new ArrayList<>())
+                .tests(new ArrayList<>())
+                .build());
+        LessonEntity lesson = lessonRepository.save(LessonEntity.builder().module(module).orderIndex(2).build());
+        module.setLessons(new ArrayList<>(List.of(lesson)));
+        module.setTests(new ArrayList<>());
 
-        ModuleResponse mapped = ModuleResponse.builder().id(1).build();
-        LessonResponse lessonResponse = LessonResponse.builder().id(5).orderIndex(2).completedStar(3).build();
+        ModuleResponse mapped = ModuleResponse.builder().id(module.getId()).build();
+        LessonResponse lessonResponse = LessonResponse.builder().id(lesson.getId()).orderIndex(2).completedStar(3).build();
 
         when(moduleConverter.toResponseForStudent(module)).thenReturn(mapped);
-        when(lessonRepository.countByModuleId(1)).thenReturn(1L);
         when(lessonService.getListLessonResponseDetail(module.getLessons(), 88)).thenReturn(new ArrayList<>(List.of(lessonResponse)));
-        when(lessonService.isCompletedLesson(5, 88)).thenReturn(true);
-        when(lessonService.completedStar(5, 88)).thenReturn(3);
-        when(lessonRepository.findByModuleId(1)).thenReturn(module.getLessons());
-        when(testRepository.findByModuleId(1)).thenReturn(List.of());
+        when(lessonService.isCompletedLesson(lesson.getId(), 88)).thenReturn(true);
+        when(lessonService.completedStar(lesson.getId(), 88)).thenReturn(3);
 
         List<ModuleResponse> result = service.getResponseDetailList(List.of(module), 88);
 
@@ -214,8 +255,7 @@ class ModuleServiceImplTest {
     @Test
     void updateModule_shouldThrowWhenModuleNotFound() {
         // Test Case ID: MAI-MDS-010
-        ModuleRequest request = ModuleRequest.builder().id(999).build();
-        when(moduleRepository.findById(999)).thenReturn(Optional.empty());
+        ModuleRequest request = ModuleRequest.builder().id(-9999).build();
 
         AppException ex = assertThrows(AppException.class, () -> service.updateModule(request));
 
@@ -225,9 +265,7 @@ class ModuleServiceImplTest {
     @Test
     void deleteModule_shouldThrowWhenModuleNotFound() {
         // Test Case ID: MAI-MDS-011
-        when(moduleRepository.findById(888)).thenReturn(Optional.empty());
-
-        AppException ex = assertThrows(AppException.class, () -> service.deleteModule(888));
+        AppException ex = assertThrows(AppException.class, () -> service.deleteModule(-9999));
 
         assertEquals(ErrorCode.MODULE_NOT_FOUND, ex.getErrorCode());
     }
@@ -235,13 +273,19 @@ class ModuleServiceImplTest {
     @Test
     void isCompleted_shouldReturnFalseWhenLessonModuleHasIncompleteLesson() {
         // Test Case ID: MAI-MDS-012
-        LessonEntity lesson = LessonEntity.builder().id(9).build();
-        ModuleEntity module = ModuleEntity.builder().id(12).type(ModuleType.LESSON).lessons(List.of(lesson)).build();
+        CourseEntity course = createCourse("IncompleteLesson");
+        ModuleEntity module = moduleRepository.save(ModuleEntity.builder()
+                .course(course)
+                .type(ModuleType.LESSON)
+                .orderIndex(1L)
+                .lessons(new ArrayList<>())
+                .build());
+        LessonEntity lesson = lessonRepository.save(LessonEntity.builder().module(module).build());
+        module.setLessons(List.of(lesson));
 
-        when(moduleRepository.findById(12)).thenReturn(Optional.of(module));
-        when(lessonService.isCompletedLesson(9, 5)).thenReturn(false);
+        when(lessonService.isCompletedLesson(lesson.getId(), 5)).thenReturn(false);
 
-        boolean actual = service.isCompleted(12, 5);
+        boolean actual = service.isCompleted(module.getId(), 5);
 
         assertFalse(actual);
     }
@@ -249,14 +293,63 @@ class ModuleServiceImplTest {
     @Test
     void isCompleted_shouldReturnTrueWhenTestModuleAllCompleted() {
         // Test Case ID: MAI-MDS-013
-        TestEntity test = TestEntity.builder().id(10).build();
-        ModuleEntity module = ModuleEntity.builder().id(13).type(ModuleType.TEST).tests(List.of(test)).build();
+        CourseEntity course = createCourse("CompletedTest");
+        ModuleEntity module = moduleRepository.save(ModuleEntity.builder()
+                .course(course)
+                .type(ModuleType.TEST)
+                .orderIndex(1L)
+                .tests(new ArrayList<>())
+                .build());
+        TestEntity test = testRepository.save(TestEntity.builder().module(module).name("Module Test").build());
+        module.setTests(List.of(test));
 
-        when(moduleRepository.findById(13)).thenReturn(Optional.of(module));
-        when(testService.isCompletedTest(10, 5)).thenReturn(true);
+        when(testService.isCompletedTest(test.getId(), 5)).thenReturn(true);
 
-        boolean actual = service.isCompleted(13, 5);
+        boolean actual = service.isCompleted(module.getId(), 5);
 
         assertTrue(actual);
+    }
+
+    private ModuleEntity createModuleWithLessonAndTest(String title) {
+        CourseEntity course = createCourse(title);
+        ModuleEntity module = moduleRepository.save(ModuleEntity.builder()
+                .course(course)
+                .type(ModuleType.LESSON)
+                .orderIndex(1L)
+                .lessons(new ArrayList<>())
+                .tests(new ArrayList<>())
+                .build());
+        LessonEntity lesson = lessonRepository.save(LessonEntity.builder().module(module).orderIndex(1).build());
+        TestEntity test = testRepository.save(TestEntity.builder().module(module).name(title + " Test").build());
+        module.setLessons(List.of(lesson));
+        module.setTests(List.of(test));
+        return module;
+    }
+
+    private CourseEntity createCourse(String title) {
+        UserEntity teacherUser = userRepository.save(UserEntity.builder()
+                .email("teacher-module-" + UUID.randomUUID() + "@example.com")
+                .password("password")
+                .fullName("Teacher Module")
+                .build());
+
+        TeacherprofileEntity teacher = new TeacherprofileEntity();
+        teacher.setUser(teacherUser);
+        teacher = teacheprofileRepository.save(teacher);
+
+        TrackEntity track = trackRepository.save(TrackEntity.builder()
+                .code("TRACK-" + UUID.randomUUID())
+                .build());
+
+        return courseRepository.save(CourseEntity.builder()
+                .title(title)
+                .type("COURSE")
+                .status("ACTIVE")
+                .levelTag(1)
+                .isPublished(1)
+                .version(1)
+                .teacherprofile(teacher)
+                .track(track)
+                .build());
     }
 }

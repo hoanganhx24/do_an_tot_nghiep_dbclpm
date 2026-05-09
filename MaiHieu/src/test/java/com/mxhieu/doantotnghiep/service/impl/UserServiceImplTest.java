@@ -1,5 +1,6 @@
 package com.mxhieu.doantotnghiep.service.impl;
 
+import com.mxhieu.doantotnghiep.Application;
 import com.mxhieu.doantotnghiep.converter.UserConverter;
 import com.mxhieu.doantotnghiep.dto.request.UserRequest;
 import com.mxhieu.doantotnghiep.dto.response.UserRespone;
@@ -11,12 +12,15 @@ import com.mxhieu.doantotnghiep.repository.RoleRepository;
 import com.mxhieu.doantotnghiep.repository.UserRepository;
 import com.mxhieu.doantotnghiep.repository.UserRoleRepository;
 import com.mxhieu.doantotnghiep.service.VerificationService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -28,39 +32,46 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = Application.class)
+@Transactional
+@Rollback
 class UserServiceImplTest {
 
-    @Mock
+    @Autowired
+    private UserServiceImpl service;
+
+    @Autowired
     private UserRepository userRepository;
 
-    @Mock
-    private VerificationService verificationService;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private MailServiceImpl mailService;
-
-    @Mock
-    private RoleRepository roleRepository;
-
-    @Mock
+    @Autowired
     private UserRoleRepository userRoleRepository;
 
-    @Mock
-    private UserConverter userConverter;
+    @PersistenceContext
+    private EntityManager entityManager;
 
-    @InjectMocks
-    private UserServiceImpl service;
+    @MockBean
+    private VerificationService verificationService;
+
+    @MockBean
+    private RoleRepository roleRepository;
+
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private MailServiceImpl mailService;
+
+    @MockBean
+    private UserConverter userConverter;
 
     @Test
     void checkEmailExistsAndSendCode_shouldThrowWhenEmailAlreadyExists() {
         // Test Case ID: MAI-USR-001
+        UserEntity existing = UserEntity.builder().email("exists@mail.com").build();
+        userRepository.save(existing);
+
         UserRequest request = new UserRequest();
         request.setEmail("exists@mail.com");
-        when(userRepository.existsByEmail("exists@mail.com")).thenReturn(true);
 
         AppException ex = assertThrows(AppException.class, () -> service.checkEmailExistsAndSendCode(request));
 
@@ -72,7 +83,6 @@ class UserServiceImplTest {
         // Test Case ID: MAI-USR-002
         UserRequest request = new UserRequest();
         request.setEmail("new@mail.com");
-        when(userRepository.existsByEmail("new@mail.com")).thenReturn(false);
 
         service.checkEmailExistsAndSendCode(request);
 
@@ -111,13 +121,14 @@ class UserServiceImplTest {
     @Test
     void createUser_shouldCreateAccountWithStudentRoleWhenOtpValid() throws Exception {
         // Test Case ID: MAI-USR-005
+        RoleEntity role = new RoleEntity();
+        role.setValue("STUDENT");
+        entityManager.persist(role);
+        entityManager.flush();
+
         UserRequest request = new UserRequest();
         request.setEmail("student@mail.com");
         request.setRole("STUDENT");
-
-        RoleEntity role = new RoleEntity();
-        role.setId(2);
-        role.setValue("STUDENT");
 
         when(verificationService.verifyCode("student@mail.com", "123456")).thenReturn(true);
         when(passwordEncoder.encode(anyString())).thenReturn("ENC");
@@ -125,8 +136,14 @@ class UserServiceImplTest {
 
         service.createUser(request, "123456");
 
-        verify(userRepository).save(any(UserEntity.class));
-        verify(userRoleRepository).save(any());
+        UserEntity savedUser = userRepository.findByEmail("student@mail.com").orElseThrow();
+        assertEquals("student@mail.com", savedUser.getEmail());
+        assertEquals("ENC", savedUser.getPassword());
+
+        boolean userRoleCreated = userRoleRepository.findAll().stream()
+                .anyMatch(userRole -> userRole.getUser().getId().equals(savedUser.getId())
+                        && userRole.getRole().getValue().equals("STUDENT"));
+        assertTrue(userRoleCreated);
         verify(mailService).sendMail(any(), anyString());
     }
 
@@ -135,7 +152,6 @@ class UserServiceImplTest {
         // Test Case ID: MAI-USR-006
         UserRequest request = new UserRequest();
         request.setEmail("none@mail.com");
-        when(userRepository.findByEmail("none@mail.com")).thenReturn(Optional.empty());
 
         AppException ex = assertThrows(AppException.class, () -> service.changePassword(request));
 
@@ -145,12 +161,13 @@ class UserServiceImplTest {
     @Test
     void changePassword_shouldThrowWhenOldPasswordCheckFailsByCurrentLogic() {
         // Test Case ID: MAI-USR-007
+        UserEntity user = UserEntity.builder().email("user@mail.com").password("stored").build();
+        userRepository.save(user);
+
         UserRequest request = new UserRequest();
         request.setEmail("user@mail.com");
         request.setPassword("old");
-        UserEntity user = UserEntity.builder().email("user@mail.com").password("stored").build();
 
-        when(userRepository.findByEmail("user@mail.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("stored", "old")).thenReturn(true);
 
         AppException ex = assertThrows(AppException.class, () -> service.changePassword(request));
@@ -162,9 +179,9 @@ class UserServiceImplTest {
     void getUserByEmail_shouldReturnConvertedResponse() {
         // Test Case ID: MAI-USR-008
         UserEntity user = UserEntity.builder().email("user@mail.com").build();
-        UserRespone response = UserRespone.builder().email("user@mail.com").build();
+        userRepository.save(user);
 
-        when(userRepository.findByEmail("user@mail.com")).thenReturn(Optional.of(user));
+        UserRespone response = UserRespone.builder().email("user@mail.com").build();
         when(userConverter.toResponse(user, UserRespone.class)).thenReturn(response);
 
         UserRespone actual = service.getUserByEmail("user@mail.com");
@@ -175,8 +192,6 @@ class UserServiceImplTest {
     @Test
     void forGotPassword_shouldThrowWhenUserNotFound() {
         // Test Case ID: MAI-USR-009
-        when(userRepository.findByEmail("none@mail.com")).thenReturn(Optional.empty());
-
         AppException ex = assertThrows(AppException.class, () -> service.forGotPassword("none@mail.com"));
 
         assertEquals(ErrorCode.USER_NOT_FOUND, ex.getErrorCode());
@@ -186,13 +201,14 @@ class UserServiceImplTest {
     void forGotPassword_shouldSendMailAndSaveNewPassword() throws Exception {
         // Test Case ID: MAI-USR-010
         UserEntity user = UserEntity.builder().email("user@mail.com").password("old").build();
-        when(userRepository.findByEmail("user@mail.com")).thenReturn(Optional.of(user));
+        userRepository.save(user);
+
         when(passwordEncoder.encode(anyString())).thenReturn("ENC");
 
         service.forGotPassword("user@mail.com");
 
+        UserEntity updatedUser = userRepository.findByEmail("user@mail.com").orElseThrow();
+        assertEquals("ENC", updatedUser.getPassword());
         verify(mailService).sendMail(any(), anyString());
-        verify(userRepository).save(user);
-        assertTrue("ENC".equals(user.getPassword()));
     }
 }

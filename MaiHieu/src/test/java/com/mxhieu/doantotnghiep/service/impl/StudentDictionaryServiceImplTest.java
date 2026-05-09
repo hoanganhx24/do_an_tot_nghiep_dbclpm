@@ -1,53 +1,58 @@
 package com.mxhieu.doantotnghiep.service.impl;
 
+import com.mxhieu.doantotnghiep.Application;
 import com.mxhieu.doantotnghiep.dto.request.StudentDictionaryRequest;
 import com.mxhieu.doantotnghiep.dto.response.StudentDictionaryResponse;
-import com.mxhieu.doantotnghiep.entity.*;
+import com.mxhieu.doantotnghiep.entity.DefinitionExampleEntity;
+import com.mxhieu.doantotnghiep.entity.DictionaryEntity;
+import com.mxhieu.doantotnghiep.entity.PartOfSpeechEntity;
+import com.mxhieu.doantotnghiep.entity.StudentDictionaryEntity;
+import com.mxhieu.doantotnghiep.entity.StudentProfileEntity;
+import com.mxhieu.doantotnghiep.entity.UserEntity;
 import com.mxhieu.doantotnghiep.exception.AppException;
 import com.mxhieu.doantotnghiep.exception.ErrorCode;
-import com.mxhieu.doantotnghiep.repository.DefinitionExampleRepository;
+import com.mxhieu.doantotnghiep.repository.DictionaryRepository;
 import com.mxhieu.doantotnghiep.repository.StudentDictionaryRepository;
 import com.mxhieu.doantotnghiep.repository.StudentProfileRepository;
+import com.mxhieu.doantotnghiep.repository.UserRepository;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = Application.class)
+@Transactional
+@Rollback
 class StudentDictionaryServiceImplTest {
 
-    @Mock
+    @Autowired
     private StudentDictionaryRepository studentDictionaryRepository;
 
-    @Mock
+    @Autowired
     private StudentProfileRepository studentProfileRepository;
 
-    @Mock
-    private DefinitionExampleRepository definitionExampleRepository;
+    @Autowired
+    private DictionaryRepository dictionaryRepository;
 
-    @InjectMocks
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private StudentDictionaryServiceImpl studentDictionaryService;
 
     @Test
     void save_shouldThrowWhenStudentProfileNotFound() {
         // Test Case ID: MAI-SDS-001
         StudentDictionaryRequest request = StudentDictionaryRequest.builder()
-                .studentProfileId(10)
-                .definitionExampleId(20)
+                .studentProfileId(-9999)
+                .definitionExampleId(-9999)
                 .build();
-
-        when(studentProfileRepository.findById(10)).thenReturn(Optional.empty());
 
         AppException ex = assertThrows(AppException.class, () -> studentDictionaryService.save(request));
 
@@ -57,13 +62,11 @@ class StudentDictionaryServiceImplTest {
     @Test
     void save_shouldThrowWhenDefinitionExampleNotFound() {
         // Test Case ID: MAI-SDS-002
+        StudentProfileEntity studentProfile = createStudentProfile("student-dict-missing-def");
         StudentDictionaryRequest request = StudentDictionaryRequest.builder()
-                .studentProfileId(10)
-                .definitionExampleId(20)
+                .studentProfileId(studentProfile.getId())
+                .definitionExampleId(-9999)
                 .build();
-
-        when(studentProfileRepository.findById(10)).thenReturn(Optional.of(StudentProfileEntity.builder().id(10).build()));
-        when(definitionExampleRepository.findById(20)).thenReturn(Optional.empty());
 
         AppException ex = assertThrows(AppException.class, () -> studentDictionaryService.save(request));
 
@@ -73,52 +76,50 @@ class StudentDictionaryServiceImplTest {
     @Test
     void save_shouldPersistStudentDictionaryWhenInputIsValid() {
         // Test Case ID: MAI-SDS-003
-        StudentProfileEntity studentProfile = StudentProfileEntity.builder().id(10).build();
-        DefinitionExampleEntity definitionExample = DefinitionExampleEntity.builder().id(20).build();
+        StudentProfileEntity studentProfile = createStudentProfile("student-dict-valid");
+        DefinitionExampleEntity definitionExample = createDefinitionExample(
+                "focus",
+                "noun",
+                "/fo-kus/",
+                "audio-url",
+                "ability to concentrate",
+                "Stay focused"
+        );
 
         StudentDictionaryRequest request = StudentDictionaryRequest.builder()
-                .studentProfileId(10)
-                .definitionExampleId(20)
+                .studentProfileId(studentProfile.getId())
+                .definitionExampleId(definitionExample.getId())
                 .build();
-
-        when(studentProfileRepository.findById(10)).thenReturn(Optional.of(studentProfile));
-        when(definitionExampleRepository.findById(20)).thenReturn(Optional.of(definitionExample));
 
         studentDictionaryService.save(request);
 
-        ArgumentCaptor<StudentDictionaryEntity> captor = ArgumentCaptor.forClass(StudentDictionaryEntity.class);
-        verify(studentDictionaryRepository).save(captor.capture());
+        List<StudentDictionaryEntity> saved = studentDictionaryRepository.findByStudentProfile_Id(studentProfile.getId());
 
-        assertEquals(10, captor.getValue().getStudentProfile().getId());
-        assertEquals(20, captor.getValue().getDefinitionExample().getId());
+        assertEquals(1, saved.size());
+        assertEquals(studentProfile.getId(), saved.get(0).getStudentProfile().getId());
+        assertEquals(definitionExample.getId(), saved.get(0).getDefinitionExample().getId());
     }
 
     @Test
     void getAllForStudent_shouldMapNestedEntityToDictionaryResponse() {
         // Test Case ID: MAI-SDS-004
-        Integer studentId = 5;
-        DictionaryEntity dictionary = DictionaryEntity.builder().word("focus").build();
-        PartOfSpeechEntity partOfSpeech = PartOfSpeechEntity.builder()
-                .partOfSpeech("noun")
-                .ipa("/fo-kus/")
-                .audio("audio-url")
-                .dictionary(dictionary)
-                .build();
-        DefinitionExampleEntity definitionExample = DefinitionExampleEntity.builder()
-                .definition("ability to concentrate")
-                .example("Stay focused")
-                .partOfSpeech(partOfSpeech)
-                .build();
-        StudentDictionaryEntity studentDictionary = StudentDictionaryEntity.builder()
-                .studentProfile(StudentProfileEntity.builder().id(studentId).build())
+        StudentProfileEntity studentProfile = createStudentProfile("student-dict-map");
+        DefinitionExampleEntity definitionExample = createDefinitionExample(
+                "focus",
+                "noun",
+                "/fo-kus/",
+                "audio-url",
+                "ability to concentrate",
+                "Stay focused"
+        );
+        studentDictionaryRepository.save(StudentDictionaryEntity.builder()
+                .studentProfile(studentProfile)
                 .definitionExample(definitionExample)
-                .build();
+                .build());
 
-        when(studentDictionaryRepository.findByStudentProfile_Id(studentId)).thenReturn(List.of(studentDictionary));
+        StudentDictionaryResponse response = studentDictionaryService.getAllForStudent(studentProfile.getId());
 
-        StudentDictionaryResponse response = studentDictionaryService.getAllForStudent(studentId);
-
-        assertEquals(studentId, response.getStudentProfileId());
+        assertEquals(studentProfile.getId(), response.getStudentProfileId());
         assertEquals(1, response.getDictionaries().size());
         assertEquals("focus", response.getDictionaries().get(0).getWord());
         assertEquals("noun", response.getDictionaries().get(0).getPartOfSpeechString());
@@ -128,12 +129,56 @@ class StudentDictionaryServiceImplTest {
     @Test
     void getAllForStudent_shouldReturnEmptyDictionaryListWhenNoSavedWord() {
         // Test Case ID: MAI-SDS-005
-        Integer studentId = 6;
-        when(studentDictionaryRepository.findByStudentProfile_Id(studentId)).thenReturn(Collections.emptyList());
+        StudentProfileEntity studentProfile = createStudentProfile("student-dict-empty");
 
-        StudentDictionaryResponse response = studentDictionaryService.getAllForStudent(studentId);
+        StudentDictionaryResponse response = studentDictionaryService.getAllForStudent(studentProfile.getId());
 
-        assertEquals(studentId, response.getStudentProfileId());
+        assertEquals(studentProfile.getId(), response.getStudentProfileId());
         assertEquals(0, response.getDictionaries().size());
+    }
+
+    private StudentProfileEntity createStudentProfile(String emailPrefix) {
+        UserEntity user = userRepository.save(UserEntity.builder()
+                .email(emailPrefix + "-" + Math.abs(System.nanoTime() % 100000) + "@test.com")
+                .password("password")
+                .fullName("Student Dictionary")
+                .status("ACTIVE")
+                .build());
+
+        return studentProfileRepository.save(StudentProfileEntity.builder()
+                .firstLogin(false)
+                .user(user)
+                .build());
+    }
+
+    private DefinitionExampleEntity createDefinitionExample(
+            String word,
+            String partOfSpeechValue,
+            String ipa,
+            String audio,
+            String definition,
+            String example
+    ) {
+        DefinitionExampleEntity definitionExample = DefinitionExampleEntity.builder()
+                .definition(definition)
+                .example(example)
+                .build();
+
+        PartOfSpeechEntity partOfSpeech = PartOfSpeechEntity.builder()
+                .partOfSpeech(partOfSpeechValue)
+                .ipa(ipa)
+                .audio(audio)
+                .definitionExample(List.of(definitionExample))
+                .build();
+        definitionExample.setPartOfSpeech(partOfSpeech);
+
+        DictionaryEntity dictionary = DictionaryEntity.builder()
+                .word(word)
+                .partOfSpeech(List.of(partOfSpeech))
+                .build();
+        partOfSpeech.setDictionary(dictionary);
+
+        DictionaryEntity savedDictionary = dictionaryRepository.save(dictionary);
+        return savedDictionary.getPartOfSpeech().get(0).getDefinitionExample().get(0);
     }
 }

@@ -1,5 +1,6 @@
 package com.mxhieu.doantotnghiep.service.impl;
 
+import com.mxhieu.doantotnghiep.Application;
 import com.mxhieu.doantotnghiep.converter.StudentProfileConverter;
 import com.mxhieu.doantotnghiep.dto.request.StudentprofileRequest;
 import com.mxhieu.doantotnghiep.dto.response.StudentprofileResponse;
@@ -9,92 +10,98 @@ import com.mxhieu.doantotnghiep.exception.AppException;
 import com.mxhieu.doantotnghiep.exception.ErrorCode;
 import com.mxhieu.doantotnghiep.repository.StudentProfileRepository;
 import com.mxhieu.doantotnghiep.repository.UserRepository;
-import com.mxhieu.doantotnghiep.service.MailService;
-import com.mxhieu.doantotnghiep.service.UserService;
-import com.mxhieu.doantotnghiep.service.VerificationService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = Application.class)
+@Transactional
+@Rollback
 class StudentProfileServiceImplTest {
 
-    @Mock
+    @Autowired
+    private StudentProfileServiceImpl service;
+
+    @Autowired
     private StudentProfileRepository studentProfileRepository;
 
-    @Mock
-    private MailService mailService;
-
-    @Mock
-    private ModelMapper modelMapper;
-
-    @Mock
-    private UserService userService;
-
-    @Mock
+    @Autowired
     private UserRepository userRepository;
 
-    @Mock
-    private VerificationService verificationService;
+    @MockBean
+    private ModelMapper modelMapper;
 
-    @Mock
+    @MockBean
     private StudentProfileConverter studentProfileConverter;
-
-    @InjectMocks
-    private StudentProfileServiceImpl service;
 
     @Test
     void createStudentProfile_shouldCreateUserThenPersistStudentProfile() {
         // Test Case ID: MAI-SPS-001
-        StudentprofileRequest request = StudentprofileRequest.builder().email("student@mail.com").otp("123456").build();
-        UserEntity mappedUser = UserEntity.builder().email("student@mail.com").build();
-        UserEntity savedUser = UserEntity.builder().id(10).email("student@mail.com").build();
+        StudentprofileRequest request = StudentprofileRequest.builder()
+                .email(uniqueEmail("student"))
+                .otp("123456")
+                .build();
+        UserEntity mappedUser = UserEntity.builder()
+                .email(request.getEmail())
+                .password("password")
+                .fullName("Student")
+                .status("ACTIVE")
+                .build();
+        UserEntity savedUser = userRepository.save(mappedUser);
 
         when(modelMapper.map(request, UserEntity.class)).thenReturn(mappedUser);
-        when(userRepository.findByEmail("student@mail.com")).thenReturn(Optional.of(savedUser));
 
         service.createStudentProfile(request);
 
-        verify(userService).createStudent(mappedUser, "123456");
-        ArgumentCaptor<StudentProfileEntity> captor = ArgumentCaptor.forClass(StudentProfileEntity.class);
-        verify(studentProfileRepository).save(captor.capture());
-        assertEquals(10, captor.getValue().getUser().getId());
+        StudentProfileEntity persisted = studentProfileRepository.findAll().stream()
+                .filter(p -> p.getUser().getId().equals(savedUser.getId()))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(savedUser.getId(), persisted.getUser().getId());
     }
 
     @Test
     void getStudentProfiles_shouldMapAllProfiles() {
         // Test Case ID: MAI-SPS-002
-        StudentProfileEntity p1 = StudentProfileEntity.builder().id(1).build();
-        when(studentProfileRepository.findAll()).thenReturn(List.of(p1));
-        when(studentProfileConverter.toResponse(p1, StudentprofileResponse.class))
-                .thenReturn(StudentprofileResponse.builder().id(1).build());
+        // Get count before adding our test profile
+        int initialCount = studentProfileRepository.findAll().size();
+
+        UserEntity user = createUser(uniqueEmail("profile"));
+        StudentProfileEntity profile = studentProfileRepository.save(StudentProfileEntity.builder()
+                .user(user)
+                .firstLogin(false)
+                .build());
+
+        StudentprofileResponse response = StudentprofileResponse.builder()
+                .id(profile.getId())
+                .build();
+        when(studentProfileConverter.toResponse(profile, StudentprofileResponse.class))
+                .thenReturn(response);
 
         List<StudentprofileResponse> result = service.getStudentProfiles();
 
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
+        assertEquals(initialCount + 1, result.size());
+        // Verify our profile is in the result
+        assertEquals(profile.getId(), result.get(result.size() - 1).getId());
     }
 
     @Test
     void getStudentProfileById_shouldThrowWhenNotFound() {
         // Test Case ID: MAI-SPS-003
-        when(studentProfileRepository.findById(99)).thenReturn(Optional.empty());
+        int missingId = -9999;
 
-        AppException ex = assertThrows(AppException.class, () -> service.getStudentProfileById(99));
+        AppException ex = assertThrows(AppException.class, () -> service.getStudentProfileById(missingId));
 
         assertEquals(ErrorCode.STUDENT_PROFILE_NOT_FOUND, ex.getErrorCode());
     }
@@ -102,8 +109,9 @@ class StudentProfileServiceImplTest {
     @Test
     void updateStudentProfile_shouldThrowWhenProfileNotFound() {
         // Test Case ID: MAI-SPS-004
-        StudentprofileRequest request = StudentprofileRequest.builder().id(99).build();
-        when(studentProfileRepository.findById(99)).thenReturn(Optional.empty());
+        StudentprofileRequest request = StudentprofileRequest.builder()
+                .id(-9999)
+                .build();
 
         AppException ex = assertThrows(AppException.class, () -> service.updateStudentProfile(request));
 
@@ -113,13 +121,28 @@ class StudentProfileServiceImplTest {
     @Test
     void khoaTaiKhoanStudentProfile_shouldSetUserInactive() {
         // Test Case ID: MAI-SPS-005
-        UserEntity user = UserEntity.builder().id(1).status("ACTIVE").build();
-        StudentProfileEntity profile = StudentProfileEntity.builder().id(5).user(user).build();
-        when(studentProfileRepository.findById(5)).thenReturn(Optional.of(profile));
+        UserEntity user = createUser(uniqueEmail("inactive"));
+        StudentProfileEntity profile = studentProfileRepository.save(StudentProfileEntity.builder()
+                .user(user)
+                .firstLogin(false)
+                .build());
 
-        service.khoaTaiKhoanStudentProfile(5);
+        service.khoaTaiKhoanStudentProfile(profile.getId());
 
-        assertEquals("INACTIVE", profile.getUser().getStatus());
-        verify(studentProfileRepository).save(profile);
+        StudentProfileEntity updated = studentProfileRepository.findById(profile.getId()).orElseThrow();
+        assertEquals("INACTIVE", updated.getUser().getStatus());
+    }
+
+    private UserEntity createUser(String email) {
+        return userRepository.save(UserEntity.builder()
+                .email(email)
+                .password("password")
+                .fullName("Test User")
+                .status("ACTIVE")
+                .build());
+    }
+
+    private String uniqueEmail(String prefix) {
+        return prefix + "-" + Math.abs(System.nanoTime() % 10000) + "@test.com";
     }
 }

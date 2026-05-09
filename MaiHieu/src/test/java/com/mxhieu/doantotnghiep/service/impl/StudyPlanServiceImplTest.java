@@ -1,82 +1,55 @@
 package com.mxhieu.doantotnghiep.service.impl;
 
+import com.mxhieu.doantotnghiep.Application;
 import com.mxhieu.doantotnghiep.converter.StudyPlanConverter;
 import com.mxhieu.doantotnghiep.dto.response.StudyPlanResponse;
 import com.mxhieu.doantotnghiep.entity.StudyPlanEntity;
 import com.mxhieu.doantotnghiep.entity.StudentProfileEntity;
+import com.mxhieu.doantotnghiep.entity.UserEntity;
 import com.mxhieu.doantotnghiep.exception.AppException;
 import com.mxhieu.doantotnghiep.exception.ErrorCode;
 import com.mxhieu.doantotnghiep.repository.*;
-import com.mxhieu.doantotnghiep.service.LessonService;
-import com.mxhieu.doantotnghiep.service.TestService;
-import com.mxhieu.doantotnghiep.service.TrackService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = Application.class)
+@Transactional
+@Rollback
 class StudyPlanServiceImplTest {
 
-    @Mock
-    private TrackRepository trackRepository;
+    @Autowired
+    private StudyPlanServiceImpl service;
 
-    @Mock
-    private EnrollmentCourseRepository enrollmentCourseRepository;
-
-    @Mock
-    private EnrollmentRepository enrollmentRepository;
-
-    @Mock
-    private StudentProfileRepository studentProfileRepository;
-
-    @Mock
-    private LessonRepository lessonRepository;
-
-    @Mock
-    private TestRepository testRepository;
-
-    @Mock
+    @Autowired
     private StudyPlanRepository studyPlanRepository;
 
-    @Mock
+    @Autowired
+    private StudentProfileRepository studentProfileRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @MockBean
     private StudyPlanConverter studyPlanConverter;
-
-    @Mock
-    private LessonService lessonService;
-
-    @Mock
-    private TestService testService;
-
-    @Mock
-    private TrackService trackService;
-
-    @Mock
-    private LessonProgressRepository lessonProgressRepository;
-
-    @Mock
-    private TestProgressRepository testProgressRepository;
-
-    @InjectMocks
-    private StudyPlanServiceImpl service;
 
     @Test
     void checkExistStudyPlan_shouldThrowWhenNoPlanFound() {
         // Test Case ID: MAI-STP-001
-        when(studyPlanRepository.findByStudentProfile_Id(10)).thenReturn(List.of());
+        StudentProfileEntity student = createStudentProfile("no-plan@example.com");
 
-        AppException ex = assertThrows(AppException.class, () -> service.checkExistStudyPlan(10));
+        AppException ex = assertThrows(AppException.class, () -> service.checkExistStudyPlan(student.getId()));
 
         assertEquals(ErrorCode.STUDYPLAN_NOT_FOUND, ex.getErrorCode());
     }
@@ -84,10 +57,16 @@ class StudyPlanServiceImplTest {
     @Test
     void checkExistStudyPlan_shouldThrowWhenOnlyInactivePlansExist() {
         // Test Case ID: MAI-STP-002
-        StudyPlanEntity inactive = StudyPlanEntity.builder().id(1).status(1).build();
-        when(studyPlanRepository.findByStudentProfile_Id(10)).thenReturn(List.of(inactive));
+        StudentProfileEntity student = createStudentProfile("inactive-only@example.com");
+        studyPlanRepository.save(StudyPlanEntity.builder()
+                .studentProfile(student)
+                .status(1)
+                .generatedAt(LocalDateTime.now())
+                .startDate(LocalDate.now())
+                .ngayHocTrongTuan(List.of(1, 3, 5))
+                .build());
 
-        AppException ex = assertThrows(AppException.class, () -> service.checkExistStudyPlan(10));
+        AppException ex = assertThrows(AppException.class, () -> service.checkExistStudyPlan(student.getId()));
 
         assertEquals(ErrorCode.STUDYPLAN_NOT_ACTIVE, ex.getErrorCode());
     }
@@ -95,21 +74,34 @@ class StudyPlanServiceImplTest {
     @Test
     void checkExistStudyPlan_shouldReturnActiveStudyPlanId() {
         // Test Case ID: MAI-STP-003
-        StudyPlanEntity inactive = StudyPlanEntity.builder().id(1).status(1).build();
-        StudyPlanEntity active = StudyPlanEntity.builder().id(2).status(0).build();
-        when(studyPlanRepository.findByStudentProfile_Id(10)).thenReturn(List.of(inactive, active));
+        StudentProfileEntity student = createStudentProfile("active-plan@example.com");
+        StudyPlanEntity inactive = studyPlanRepository.save(StudyPlanEntity.builder()
+                .studentProfile(student)
+                .status(1)
+                .generatedAt(LocalDateTime.now())
+                .startDate(LocalDate.now())
+                .ngayHocTrongTuan(List.of(1, 3, 5))
+                .build());
 
-        Integer id = service.checkExistStudyPlan(10);
+        StudyPlanEntity active = studyPlanRepository.save(StudyPlanEntity.builder()
+                .studentProfile(student)
+                .status(0)
+                .generatedAt(LocalDateTime.now())
+                .startDate(LocalDate.now())
+                .ngayHocTrongTuan(List.of(2, 4, 6))
+                .build());
 
-        assertEquals(2, id);
+        Integer id = service.checkExistStudyPlan(student.getId());
+
+        assertEquals(active.getId(), id);
     }
 
     @Test
     void getStudyPlanDetail_shouldThrowWhenStudyPlanNotFound() {
         // Test Case ID: MAI-STP-004
-        when(studyPlanRepository.findById(99)).thenReturn(Optional.empty());
+        int missingStudyPlanId = -9999;
 
-        AppException ex = assertThrows(AppException.class, () -> service.getStudyPlanDetail(99));
+        AppException ex = assertThrows(AppException.class, () -> service.getStudyPlanDetail(missingStudyPlanId));
 
         assertEquals(ErrorCode.STUDYPLAN_NOT_FOUND, ex.getErrorCode());
     }
@@ -117,23 +109,45 @@ class StudyPlanServiceImplTest {
     @Test
     void getStudyPlanDetail_shouldReturnSummaryAndEmptyItemList() {
         // Test Case ID: MAI-STP-005
-        StudyPlanEntity entity = StudyPlanEntity.builder()
-                .id(1)
+        StudentProfileEntity student = createStudentProfile("detail-plan@example.com");
+        StudyPlanEntity entity = studyPlanRepository.save(StudyPlanEntity.builder()
+                .studentProfile(student)
                 .status(0)
                 .generatedAt(LocalDateTime.now())
                 .startDate(LocalDate.now())
                 .ngayHocTrongTuan(List.of(1, 3, 5))
-            .studentProfile(StudentProfileEntity.builder().id(10).build())
+                .soLuongNgayHoc(10)
                 .studyPlanItems(new ArrayList<>())
+                .build());
+
+        StudyPlanResponse summary = StudyPlanResponse.builder()
+                .id(entity.getId())
+                .status(0)
+                .studentProfileId(student.getId())
+                .startDate(LocalDate.now())
+                .ngayHocTrongTuan(List.of(1, 3, 5))
                 .build();
-        StudyPlanResponse summary = StudyPlanResponse.builder().id(1).status(0).build();
+        summary.setStudyPlanItems(new ArrayList<>());
 
-        when(studyPlanRepository.findById(1)).thenReturn(Optional.of(entity));
-        when(studyPlanConverter.toResponseSummery(entity)).thenReturn(summary);
+        org.mockito.Mockito.when(studyPlanConverter.toResponseSummery(entity)).thenReturn(summary);
 
-        StudyPlanResponse response = service.getStudyPlanDetail(1);
+        StudyPlanResponse response = service.getStudyPlanDetail(entity.getId());
 
-        assertEquals(1, response.getId());
+        assertEquals(entity.getId(), response.getId());
         assertEquals(0, response.getStudyPlanItems().size());
+    }
+
+    private StudentProfileEntity createStudentProfile(String email) {
+        UserEntity user = userRepository.save(UserEntity.builder()
+                .email(email)
+                .password("password")
+                .fullName("Student")
+                .status("ACTIVE")
+                .build());
+
+        return studentProfileRepository.save(StudentProfileEntity.builder()
+                .firstLogin(false)
+                .user(user)
+                .build());
     }
 }

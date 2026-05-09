@@ -1,77 +1,65 @@
 package com.mxhieu.doantotnghiep.service.impl;
 
+import com.mxhieu.doantotnghiep.Application;
 import com.mxhieu.doantotnghiep.converter.TeacherprofileConverter;
 import com.mxhieu.doantotnghiep.dto.request.TeacherprofileRequest;
 import com.mxhieu.doantotnghiep.dto.response.TeacherprofileResponse;
-import com.mxhieu.doantotnghiep.entity.RoleEntity;
 import com.mxhieu.doantotnghiep.entity.TeacherprofileEntity;
 import com.mxhieu.doantotnghiep.entity.UserEntity;
 import com.mxhieu.doantotnghiep.exception.AppException;
 import com.mxhieu.doantotnghiep.exception.ErrorCode;
-import com.mxhieu.doantotnghiep.repository.RoleRepository;
 import com.mxhieu.doantotnghiep.repository.TeacheprofileRepository;
 import com.mxhieu.doantotnghiep.repository.UserRepository;
-import com.mxhieu.doantotnghiep.repository.UserRoleRepository;
-import com.mxhieu.doantotnghiep.service.UserService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.modelmapper.ModelMapper;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = Application.class)
+@Transactional
+@Rollback
 class TeacherprofileServiceImplTest {
 
-    @Mock
+    @Autowired
+    private TeacherprofileServiceImpl service;
+
+    @Autowired
     private TeacheprofileRepository teacherprofileRepository;
 
-    @Mock
+    @Autowired
     private UserRepository userRepository;
 
-    @Mock
-    private ModelMapper modelMapper;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
+    @MockBean
     private MailServiceImpl mailService;
 
-    @Mock
-    private RoleRepository roleRepository;
-
-    @Mock
-    private UserRoleRepository userRoleRepository;
-
-    @Mock
+    @MockBean
     private TeacherprofileConverter teacherprofileConverter;
-
-    @Mock
-    private UserService userService;
-
-    @InjectMocks
-    private TeacherprofileServiceImpl service;
 
     @Test
     void checkEmailExists_shouldThrowWhenEmailAlreadyExists() {
         // Test Case ID: MAI-THS-001
-        when(userRepository.existsByEmail("exists@mail.com")).thenReturn(true);
+        String email = "exists-" + UUID.randomUUID() + "@mail.com";
+        UserEntity user = userRepository.save(UserEntity.builder()
+                .email(email)
+                .password("password")
+                .fullName("Existing Teacher")
+                .status("ACTIVE")
+                .build());
 
-        AppException ex = assertThrows(AppException.class, () -> service.checkEmailExists("exists@mail.com"));
+        AppException ex = assertThrows(AppException.class, () -> service.checkEmailExists(email));
 
         assertEquals(ErrorCode.EMAIL_ALREADY_EXISTS, ex.getErrorCode());
     }
@@ -79,19 +67,12 @@ class TeacherprofileServiceImplTest {
     @Test
     void createTeacherProfile_shouldThrowEmailSendFailedWhenMailThrowsRuntimeException() throws Exception {
         // Test Case ID: MAI-THS-002
+        String email = "teacher-mail-fail-" + UUID.randomUUID() + "@mail.com";
         TeacherprofileRequest request = new TeacherprofileRequest();
-        request.setEmail("teacher@mail.com");
+        request.setEmail(email);
+        request.setFullName("Teacher Mail Test");
         request.setBirthday("2000-01-01");
 
-        UserEntity mappedUser = UserEntity.builder().email("teacher@mail.com").build();
-        TeacherprofileEntity mappedTeacher = new TeacherprofileEntity();
-        RoleEntity role = new RoleEntity();
-        role.setValue("TEACHER");
-
-        when(modelMapper.map(request, UserEntity.class)).thenReturn(mappedUser);
-        when(modelMapper.map(request, TeacherprofileEntity.class)).thenReturn(mappedTeacher);
-        when(passwordEncoder.encode(anyString())).thenReturn("ENC");
-        when(roleRepository.findByValue("TEACHER")).thenReturn(Optional.of(role));
         doThrow(new RuntimeException("mail fail")).when(mailService).sendMail(any(), anyString());
 
         AppException ex = assertThrows(AppException.class, () -> service.createTeacherProfile(request));
@@ -102,24 +83,32 @@ class TeacherprofileServiceImplTest {
     @Test
     void getAllTeacherProfilesActive_shouldReturnConverterResult() {
         // Test Case ID: MAI-THS-003
-        TeacherprofileEntity teacher = new TeacherprofileEntity();
-        TeacherprofileResponse response = TeacherprofileResponse.builder().id(1).build();
+        UserEntity teacherUser = userRepository.save(UserEntity.builder()
+                .email("active-teacher-" + UUID.randomUUID() + "@mail.com")
+                .password("password")
+                .fullName("Active Teacher")
+                .status("ACTIVE")
+                .build());
 
-        when(teacherprofileRepository.findAllActiveTeachers()).thenReturn(List.of(teacher));
-        when(teacherprofileConverter.toResponseList(List.of(teacher), TeacherprofileResponse.class)).thenReturn(List.of(response));
+        TeacherprofileEntity teacher = new TeacherprofileEntity();
+        teacher.setUser(teacherUser);
+        teacher = teacherprofileRepository.save(teacher);
+
+        TeacherprofileResponse response = TeacherprofileResponse.builder().id(teacher.getId()).build();
+        when(teacherprofileConverter.toResponseList(any(), any())).thenReturn(List.of(response));
 
         List<TeacherprofileResponse> actual = service.getAllTeacherProfilesActive();
 
         assertEquals(1, actual.size());
-        assertEquals(1, actual.get(0).getId());
+        assertEquals(teacher.getId(), actual.get(0).getId());
     }
 
     @Test
     void terminateTeacherProfile_shouldThrowWhenTeacherNotFound() {
         // Test Case ID: MAI-THS-004
-        when(teacherprofileRepository.findById(10)).thenReturn(Optional.empty());
+        int missingTeacherId = -9999;
 
-        AppException ex = assertThrows(AppException.class, () -> service.terminateTeacherProfile(10));
+        AppException ex = assertThrows(AppException.class, () -> service.terminateTeacherProfile(missingTeacherId));
 
         assertEquals(ErrorCode.TEACHERPROFILE_NOT_FOUND, ex.getErrorCode());
     }
@@ -127,16 +116,21 @@ class TeacherprofileServiceImplTest {
     @Test
     void terminateTeacherProfile_shouldSetTeacherUserInactive() {
         // Test Case ID: MAI-THS-005
-        UserEntity user = UserEntity.builder().id(2).status("ACTIVE").birthday(LocalDate.of(2000, 1, 1)).build();
+        UserEntity user = userRepository.save(UserEntity.builder()
+                .email("terminate-teacher-" + UUID.randomUUID() + "@mail.com")
+                .password("password")
+                .fullName("Teacher to Terminate")
+                .status("ACTIVE")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build());
+
         TeacherprofileEntity teacher = new TeacherprofileEntity();
-        teacher.setId(11);
         teacher.setUser(user);
+        teacher = teacherprofileRepository.save(teacher);
 
-        when(teacherprofileRepository.findById(11)).thenReturn(Optional.of(teacher));
+        service.terminateTeacherProfile(teacher.getId());
 
-        service.terminateTeacherProfile(11);
-
-        assertEquals("INACTIVE", user.getStatus());
-        verify(userRepository).save(user);
+        UserEntity updated = userRepository.findById(user.getId()).orElseThrow();
+        assertEquals("INACTIVE", updated.getStatus());
     }
 }

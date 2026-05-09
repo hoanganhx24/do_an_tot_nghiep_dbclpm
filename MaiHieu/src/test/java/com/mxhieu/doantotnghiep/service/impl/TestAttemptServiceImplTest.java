@@ -1,73 +1,65 @@
 package com.mxhieu.doantotnghiep.service.impl;
 
-import com.mxhieu.doantotnghiep.converter.TestAttemptConverter;
+import com.mxhieu.doantotnghiep.Application;
 import com.mxhieu.doantotnghiep.dto.request.TestAttemptRequest;
 import com.mxhieu.doantotnghiep.dto.response.TestAttemptResponse;
 import com.mxhieu.doantotnghiep.entity.StudentProfileEntity;
-import com.mxhieu.doantotnghiep.entity.TestEntity;
 import com.mxhieu.doantotnghiep.entity.TestAttemptEntity;
+import com.mxhieu.doantotnghiep.entity.TestEntity;
+import com.mxhieu.doantotnghiep.entity.UserEntity;
 import com.mxhieu.doantotnghiep.exception.AppException;
 import com.mxhieu.doantotnghiep.exception.ErrorCode;
-import com.mxhieu.doantotnghiep.repository.*;
+import com.mxhieu.doantotnghiep.repository.StudentProfileRepository;
+import com.mxhieu.doantotnghiep.repository.TestAttemptRepository;
+import com.mxhieu.doantotnghiep.repository.TestRepository;
+import com.mxhieu.doantotnghiep.repository.UserRepository;
 import com.mxhieu.doantotnghiep.service.EnrollmentServece;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.modelmapper.ModelMapper;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = Application.class)
+@Transactional
+@Rollback
 class TestAttemptServiceImplTest {
 
-    @Mock
+    @Autowired
+    private TestAttemptServiceImpl service;
+
+    @Autowired
     private TestRepository testRepository;
 
-    @Mock
+    @Autowired
     private StudentProfileRepository studentProfileRepository;
 
-    @Mock
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private TestAttemptRepository testAttemptRepository;
 
-    @Mock
-    private AssessmentRepository assessmentRepository;
-
-    @Mock
-    private AssessmentQuestionRepository assessmentQuestionRepository;
-
-    @Mock
+    @MockBean
     private EnrollmentServece enrollmentServece;
-
-    @Mock
-    private TestAttemptConverter testAttemptConverter;
-
-    @Mock
-    private AssessmentOptionRepository assessmentOptionRepository;
-
-    @Mock
-    private AssessmentAnswerRepository assessmentAnswerRepository;
-
-    @Mock
-    private ModelMapper modelMapper;
-
-    @InjectMocks
-    private TestAttemptServiceImpl service;
 
     @Test
     void saveResultFirstTest_shouldThrowWhenStudentNotFound() {
         // Test Case ID: MAI-TAS-001
-        TestAttemptRequest request = TestAttemptRequest.builder().studentProfileId(10).testId(1).assessmentAttemptRequests(new ArrayList<>()).build();
-        when(studentProfileRepository.findById(10)).thenReturn(Optional.empty());
+        TestAttemptRequest request = TestAttemptRequest.builder()
+                .studentProfileId(10)
+                .testId(1)
+                .assessmentAttemptRequests(List.of())
+                .build();
 
         AppException ex = assertThrows(AppException.class, () -> service.saveResultFirstTest(request));
 
@@ -77,30 +69,46 @@ class TestAttemptServiceImplTest {
     @Test
     void saveResultFirstTest_shouldSetFirstLoginFalseAndSaveAttempt() {
         // Test Case ID: MAI-TAS-002
-        StudentProfileEntity student = StudentProfileEntity.builder().id(10).firstLogin(true).build();
-        TestEntity test = TestEntity.builder().id(1).build();
-        TestAttemptRequest request = TestAttemptRequest.builder()
-                .studentProfileId(10)
-                .testId(1)
-                .assessmentAttemptRequests(new ArrayList<>())
+        UserEntity user = UserEntity.builder()
+                .email("student-test@example.com")
+                .password("password")
+                .fullName("Student Test")
                 .build();
+        user = userRepository.save(user);
 
-        when(studentProfileRepository.findById(10)).thenReturn(Optional.of(student));
-        when(testRepository.findById(1)).thenReturn(Optional.of(test));
+        StudentProfileEntity student = StudentProfileEntity.builder()
+                .firstLogin(true)
+                .user(user)
+                .build();
+        student = studentProfileRepository.save(student);
+
+        TestEntity test = TestEntity.builder().name("Integration Test").build();
+        test = testRepository.save(test);
+
+        TestAttemptRequest request = TestAttemptRequest.builder()
+                .studentProfileId(student.getId())
+                .testId(test.getId())
+                .assessmentAttemptRequests(List.of())
+                .build();
 
         service.saveResultFirstTest(request);
 
-        verify(studentProfileRepository).save(student);
-        verify(testAttemptRepository).save(any(TestAttemptEntity.class));
+        StudentProfileEntity updatedStudent = studentProfileRepository.findById(student.getId()).orElseThrow();
+        List<TestAttemptEntity> savedAttempts = testAttemptRepository.findByTestIdAndStudentProfileId(test.getId(), student.getId());
+
+        assertEquals(false, updatedStudent.getFirstLogin());
+        assertEquals(1, savedAttempts.size());
         verify(enrollmentServece).saveEnrollment(any());
-        assertEquals(false, student.getFirstLogin());
     }
 
     @Test
     void saveResultMiniTest_shouldThrowWhenTestNotFound() {
         // Test Case ID: MAI-TAS-003
-        TestAttemptRequest request = TestAttemptRequest.builder().studentProfileId(10).testId(2).assessmentAttemptRequests(new ArrayList<>()).build();
-        when(testRepository.findById(2)).thenReturn(Optional.empty());
+        TestAttemptRequest request = TestAttemptRequest.builder()
+                .studentProfileId(10)
+                .testId(2)
+                .assessmentAttemptRequests(List.of())
+                .build();
 
         AppException ex = assertThrows(AppException.class, () -> service.saveResultMiniTest(request));
 
@@ -110,9 +118,14 @@ class TestAttemptServiceImplTest {
     @Test
     void saveResultMiniTest_shouldThrowWhenStudentNotFound() {
         // Test Case ID: MAI-TAS-004
-        TestAttemptRequest request = TestAttemptRequest.builder().studentProfileId(10).testId(2).assessmentAttemptRequests(new ArrayList<>()).build();
-        when(testRepository.findById(2)).thenReturn(Optional.of(TestEntity.builder().id(2).build()));
-        when(studentProfileRepository.findById(10)).thenReturn(Optional.empty());
+        TestEntity test = TestEntity.builder().name("Integration Test").build();
+        test = testRepository.save(test);
+
+        TestAttemptRequest request = TestAttemptRequest.builder()
+                .studentProfileId(10)
+                .testId(test.getId())
+                .assessmentAttemptRequests(List.of())
+                .build();
 
         AppException ex = assertThrows(AppException.class, () -> service.saveResultMiniTest(request));
 
@@ -122,9 +135,7 @@ class TestAttemptServiceImplTest {
     @Test
     void getTestAttemptDetailById_shouldThrowWhenAttemptNotFound() {
         // Test Case ID: MAI-TAS-005
-        when(testAttemptRepository.findById(999)).thenReturn(Optional.empty());
-
-        AppException ex = assertThrows(AppException.class, () -> service.getTestAttemptDetailById(999));
+        AppException ex = assertThrows(AppException.class, () -> service.getTestAttemptDetailById(999999));
 
         assertEquals(ErrorCode.TEST_ATTEMPT_NOT_FOUND, ex.getErrorCode());
     }
@@ -132,15 +143,34 @@ class TestAttemptServiceImplTest {
     @Test
     void getTestAttemptDetailById_shouldReturnSummaryWhenNoAssessmentAttempt() {
         // Test Case ID: MAI-TAS-006
-        TestAttemptEntity entity = TestAttemptEntity.builder().id(1).assessmentAttempts(new ArrayList<>()).build();
-        TestAttemptResponse response = TestAttemptResponse.builder().id(1).build();
+        UserEntity user = UserEntity.builder()
+                .email("student-detail@example.com")
+                .password("password")
+                .fullName("Student Detail")
+                .build();
+        user = userRepository.save(user);
 
-        when(testAttemptRepository.findById(1)).thenReturn(Optional.of(entity));
-        when(testAttemptConverter.toResponseSummery(entity)).thenReturn(response);
+        StudentProfileEntity student = StudentProfileEntity.builder()
+                .firstLogin(false)
+                .user(user)
+                .build();
+        student = studentProfileRepository.save(student);
 
-        TestAttemptResponse actual = service.getTestAttemptDetailById(1);
+        TestEntity test = TestEntity.builder().name("Integration Test").build();
+        test = testRepository.save(test);
 
-        assertEquals(1, actual.getId());
+        TestAttemptEntity entity = TestAttemptEntity.builder()
+                .studentProfile(student)
+                .test(test)
+                .assessmentAttempts(List.of())
+                .totalScore(0f)
+                .testAt(LocalDateTime.now())
+                .build();
+        entity = testAttemptRepository.save(entity);
+
+        TestAttemptResponse actual = service.getTestAttemptDetailById(entity.getId());
+
+        assertEquals(entity.getId(), actual.getId());
         assertEquals(0, actual.getAssessmentResponses().size());
     }
 }
