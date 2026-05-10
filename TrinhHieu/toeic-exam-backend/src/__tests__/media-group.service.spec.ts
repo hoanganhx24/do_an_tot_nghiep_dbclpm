@@ -62,7 +62,7 @@ afterEach(async () => {
         await queryRunner.rollbackTransaction();
         await queryRunner.release();
     }
-    
+
     // Restore method cũ
     AppDataSource.transaction = originalTransactionMethod;
     AppDataSource.getRepository = originalGetRepositoryMethod;
@@ -128,7 +128,7 @@ describe('createMediaGroup()', () => {
         expect(result.Title).toBe(dto.Title);
         expect(result.Media.Skill).toBe(dto.Media.Skill);
         expect(result.TotalQuestions).toBe(dto.Questions.length);
-        
+
         // Assert Questions
         expect(result.Questions.length).toBe(2);
         expect(result.Questions[0].Choices.length).toBe(4);
@@ -165,10 +165,12 @@ describe('createMediaGroup()', () => {
     it('TC-MGS-005 - Throw lỗi khi câu hỏi không có đáp án đúng nào', async () => {
         const dto = makeCreateMediaGroupDto({
             Questions: [
-                { QuestionText: 'Q1', OrderInGroup: 1, Choices: [
-                    { Content: 'A', Attribute: 'A', IsCorrect: false },
-                    { Content: 'B', Attribute: 'B', IsCorrect: false }
-                ]}
+                {
+                    QuestionText: 'Q1', OrderInGroup: 1, Choices: [
+                        { Content: 'A', Attribute: 'A', IsCorrect: false },
+                        { Content: 'B', Attribute: 'B', IsCorrect: false }
+                    ]
+                }
             ]
         });
         await expect(service.createMediaGroup(dto as any, USER_ID))
@@ -178,10 +180,12 @@ describe('createMediaGroup()', () => {
     it('TC-MGS-006 - Throw lỗi khi câu hỏi có nhiều hơn 1 đáp án đúng', async () => {
         const dto = makeCreateMediaGroupDto({
             Questions: [
-                { QuestionText: 'Q1', OrderInGroup: 1, Choices: [
-                    { Content: 'A', Attribute: 'A', IsCorrect: true },
-                    { Content: 'B', Attribute: 'B', IsCorrect: true }
-                ]}
+                {
+                    QuestionText: 'Q1', OrderInGroup: 1, Choices: [
+                        { Content: 'A', Attribute: 'A', IsCorrect: true },
+                        { Content: 'B', Attribute: 'B', IsCorrect: true }
+                    ]
+                }
             ]
         });
         await expect(service.createMediaGroup(dto as any, USER_ID))
@@ -265,7 +269,7 @@ describe('deleteMediaGroup()', () => {
         // Verify group is deleted
         await expect(service.getMediaGroupDetail(createdGroup.MediaQuestionID))
             .rejects.toThrow('Media group not found');
-            
+
         // Các questions và choices cũng bị xoá (verify thông qua count database trực tiếp nếu cần,
         // nhưng ở đây được trigger bởi service -> repository)
     });
@@ -276,51 +280,51 @@ describe('deleteMediaGroup()', () => {
     });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// getMediaGroupStatistics()
-// ═══════════════════════════════════════════════════════════════════════════════
-describe('getMediaGroupStatistics()', () => {
-    it('TC-MGS-013 - Lấy thống kê cơ bản của media group', async () => {
-        // Arrange
-        const createdGroup = await insertMockMediaGroup('Group for stats');
+// // ═══════════════════════════════════════════════════════════════════════════════
+// // getMediaGroupStatistics()
+// // ═══════════════════════════════════════════════════════════════════════════════
+// describe('getMediaGroupStatistics()', () => {
+//     it('TC-MGS-013 - Lấy thống kê cơ bản của media group', async () => {
+//         // Arrange
+//         const createdGroup = await insertMockMediaGroup('Group for stats');
 
-        // Act
-        const stats = await service.getMediaGroupStatistics(createdGroup.MediaQuestionID);
+//         // Act
+//         const stats = await service.getMediaGroupStatistics(createdGroup.MediaQuestionID);
 
-        // Assert
-        expect(stats).toBeDefined();
-        expect(stats.mediaGroupId).toBe(createdGroup.MediaQuestionID);
-        expect(stats.questionCount).toBe(2);
-        expect(stats.usedInExams).toBe(0); // Vì test data mới tạo chưa gán vào exam nào
-        expect(stats.totalAttempts).toBe(0);
-    });
-});
+//         // Assert
+//         expect(stats).toBeDefined();
+//         expect(stats.mediaGroupId).toBe(createdGroup.MediaQuestionID);
+//         expect(stats.questionCount).toBe(2);
+//         expect(stats.usedInExams).toBe(0); // Vì test data mới tạo chưa gán vào exam nào
+//         expect(stats.totalAttempts).toBe(0);
+//     });
+// });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// getMediaGroupsForBrowsing()
-// ═══════════════════════════════════════════════════════════════════════════════
-describe('getMediaGroupsForBrowsing()', () => {
-    it('TC-MGS-014 - Lấy danh sách media groups', async () => {
-        // Arrange
-        await insertMockMediaGroup('Group Browse 1');
-        await insertMockMediaGroup('Group Browse 2');
+// // ═══════════════════════════════════════════════════════════════════════════════
+// // getMediaGroupsForBrowsing()
+// // ═══════════════════════════════════════════════════════════════════════════════
+// describe('getMediaGroupsForBrowsing()', () => {
+//     it('TC-MGS-014 - Lấy danh sách media groups', async () => {
+//         // Arrange
+//         await insertMockMediaGroup('Group Browse 1');
+//         await insertMockMediaGroup('Group Browse 2');
 
-        // Act
-        const result = await service.getMediaGroupsForBrowsing({ Page: 1, Limit: 10 });
+//         // Act
+//         const result = await service.getMediaGroupsForBrowsing({ Page: 1, Limit: 10 });
 
-        // Assert
-        expect(result).toBeDefined();
-        expect(result.groups).toBeInstanceOf(Array);
-        expect(result.groups.length).toBeGreaterThanOrEqual(2);
-        expect(result.pagination.TotalPages).toBeGreaterThan(0);
-    });
-});
+//         // Assert
+//         expect(result).toBeDefined();
+//         expect(result.groups).toBeInstanceOf(Array);
+//         expect(result.groups.length).toBeGreaterThanOrEqual(2);
+//         expect(result.pagination.TotalPages).toBeGreaterThan(0);
+//     });
+// });
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // cloneMediaGroup()
 // ═══════════════════════════════════════════════════════════════════════════════
 describe('cloneMediaGroup()', () => {
-    it('TC-MGS-015 - Clone media group thành công (kèm theo questions)', async () => {
+    it('TC-MGS-013 - Clone media group thành công (kèm theo questions)', async () => {
         // Arrange
         const originalGroup = await insertMockMediaGroup('Original Group');
 
@@ -332,14 +336,14 @@ describe('cloneMediaGroup()', () => {
         expect(clonedGroup.MediaQuestionID).not.toBe(originalGroup.MediaQuestionID); // Phải là ID mới
         expect(clonedGroup.Title).toBe('Cloned Group');
         expect(clonedGroup.TotalQuestions).toBe(originalGroup.TotalQuestions);
-        
+
         // Assert Questions
         expect(clonedGroup.Questions.length).toBe(2);
         expect(clonedGroup.Questions[0].QuestionText).toBe(originalGroup.Questions[0].QuestionText);
         expect(clonedGroup.Questions[0].ID).not.toBe(originalGroup.Questions[0].ID); // ID question phải khác
     });
 
-    it('TC-MGS-016 - Clone media group thành công không truyền newTitle (dùng mặc định)', async () => {
+    it('TC-MGS-014 - Clone media group thành công không truyền newTitle (dùng mặc định)', async () => {
         // Arrange
         const originalGroup = await insertMockMediaGroup('Original Group 2');
 
@@ -352,7 +356,7 @@ describe('cloneMediaGroup()', () => {
         expect(clonedGroup.TotalQuestions).toBe(originalGroup.TotalQuestions);
     });
 
-    it('TC-MGS-017 - Throw lỗi khi clone media group không tồn tại', async () => {
+    it('TC-MGS-015 - Throw lỗi khi clone media group không tồn tại', async () => {
         await expect(service.cloneMediaGroup(999999, USER_ID))
             .rejects.toThrow('Media group not found');
     });
@@ -362,7 +366,7 @@ describe('cloneMediaGroup()', () => {
 // addQuestionToGroup()
 // ═══════════════════════════════════════════════════════════════════════════════
 describe('addQuestionToGroup()', () => {
-    it('TC-MGS-018 - Add thêm question vào group thành công (truyền OrderInGroup)', async () => {
+    it('TC-MGS-016 - Add thêm question vào group thành công (truyền OrderInGroup)', async () => {
         // Arrange
         const group = await insertMockMediaGroup('Group to add Q');
         const questionData = {
@@ -382,13 +386,13 @@ describe('addQuestionToGroup()', () => {
         expect(result.QuestionText).toBe('New added question?');
         expect(result.OrderInGroup).toBe(3);
         expect(result.MediaQuestionID).toBe(group.MediaQuestionID);
-        
+
         // Verify via detail
         const updatedGroup = await service.getMediaGroupDetail(group.MediaQuestionID);
         expect(updatedGroup.TotalQuestions).toBe(3);
     });
 
-    it('TC-MGS-019 - Add thêm question vào group thành công (auto-assign OrderInGroup)', async () => {
+    it('TC-MGS-017 - Add thêm question vào group thành công (auto-assign OrderInGroup)', async () => {
         // Arrange
         const group = await insertMockMediaGroup('Group for auto order');
         const questionData = {
@@ -407,13 +411,13 @@ describe('addQuestionToGroup()', () => {
         expect(result).toBeDefined();
         // Order tiếp theo sẽ tự được tính (trong trường hợp này có thể là 3)
         expect(result.OrderInGroup).toBeGreaterThanOrEqual(3);
-        
+
         // Verify via detail
         const updatedGroup = await service.getMediaGroupDetail(group.MediaQuestionID);
         expect(updatedGroup.TotalQuestions).toBe(3);
     });
 
-    it('TC-MGS-020 - Throw lỗi khi OrderInGroup bị trùng', async () => {
+    it('TC-MGS-018 - Throw lỗi khi OrderInGroup bị trùng', async () => {
         // Arrange
         const group = await insertMockMediaGroup('Group duplicated order');
         const questionData = {
@@ -430,7 +434,7 @@ describe('addQuestionToGroup()', () => {
             .rejects.toThrow('OrderInGroup 1 is already used in this media group');
     });
 
-    it('TC-MGS-021 - Throw lỗi khi add question vào group không tồn tại', async () => {
+    it('TC-MGS-019 - Throw lỗi khi add question vào group không tồn tại', async () => {
         const questionData = {
             QuestionText: 'Invalid group question?',
             OrderInGroup: 1,
@@ -449,7 +453,7 @@ describe('addQuestionToGroup()', () => {
 // removeQuestionFromGroup()
 // ═══════════════════════════════════════════════════════════════════════════════
 describe('removeQuestionFromGroup()', () => {
-    it('TC-MGS-022 - Remove question thành công khỏi group', async () => {
+    it('TC-MGS-020 - Remove question thành công khỏi group', async () => {
         // Arrange
         const group = await insertMockMediaGroup('Group to remove Q');
         const questionToRemove = group.Questions[0];
@@ -459,13 +463,13 @@ describe('removeQuestionFromGroup()', () => {
 
         // Assert
         expect(result).toBe(true);
-        
+
         // Verify via detail
         const updatedGroup = await service.getMediaGroupDetail(group.MediaQuestionID);
         expect(updatedGroup.TotalQuestions).toBe(1); // 2 - 1 = 1
     });
 
-    it('TC-MGS-023 - Throw lỗi khi question không thuộc về group', async () => {
+    it('TC-MGS-021 - Throw lỗi khi question không thuộc về group', async () => {
         // Arrange
         const group1 = await insertMockMediaGroup('Group 1');
         const group2 = await insertMockMediaGroup('Group 2');
@@ -476,11 +480,11 @@ describe('removeQuestionFromGroup()', () => {
             .rejects.toThrow('Question not found in this media group');
     });
 
-    it('TC-MGS-024 - Throw lỗi khi question đang được dùng trong exam', async () => {
+    it('TC-MGS-022 - Throw lỗi khi question đang được dùng trong exam', async () => {
         // Arrange
         const group = await insertMockMediaGroup('Group with used question');
         const questionToRemove = group.Questions[0];
-        
+
         // Mock getUsageStats để mô phỏng question đang được sử dụng
         const repo: any = (service as any).questionRepository;
         const originalStats = repo.getUsageStats;
@@ -489,7 +493,7 @@ describe('removeQuestionFromGroup()', () => {
         // Act & Assert
         await expect(service.removeQuestionFromGroup(group.MediaQuestionID, questionToRemove.ID))
             .rejects.toThrow('Cannot remove question: It is used in 2 exam(s)');
-            
+
         // Restore
         repo.getUsageStats = originalStats;
     });

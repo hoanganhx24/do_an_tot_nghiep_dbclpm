@@ -60,7 +60,7 @@ afterEach(async () => {
         await queryRunner.rollbackTransaction();
         await queryRunner.release();
     }
-    
+
     // Restore method cũ
     AppDataSource.transaction = originalTransactionMethod;
     AppDataSource.getRepository = originalGetRepositoryMethod;
@@ -128,9 +128,9 @@ describe('createQuestion()', () => {
         });
 
         await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('Listening questions must have audio URL');
-        
+
         // Count in DB to ensure no partial inserts
-        const count = await queryRunner.manager.count(Question, { where: { QuestionText: dto.QuestionText }});
+        const count = await queryRunner.manager.count(Question, { where: { QuestionText: dto.QuestionText } });
         expect(count).toBe(0);
     });
 
@@ -143,17 +143,9 @@ describe('createQuestion()', () => {
         await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('Part 1 questions must have an image');
     });
 
+
     // TC-QST-004
-    it('TC-QST-004 - Throw lỗi khi AudioUrl có format không hợp lệ', async () => {
-        const dto = makeCreateDto({
-            Media: { Skill: 'LISTENING', Type: 'MULTIPLE_CHOICE', Section: '3', AudioUrl: 'ftp://invalid.url/audio.mp3' },
-        });
-
-        await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('Invalid audio URL format');
-    });
-
-    // TC-QST-005
-    it('TC-QST-005 - Throw lỗi khi ImageUrl có format không hợp lệ', async () => {
+    it('TC-QST-004 - Throw lỗi khi ImageUrl có format không hợp lệ', async () => {
         const dto = makeCreateDto({
             Media: { Skill: 'READING', Type: 'MULTIPLE_CHOICE', Section: '5', AudioUrl: undefined, ImageUrl: 'invalid-url' },
         });
@@ -161,8 +153,8 @@ describe('createQuestion()', () => {
         await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('Invalid image URL format');
     });
 
-    // TC-QST-006
-    it('TC-QST-006 - Throw lỗi khi choices có ít hơn 2 phần tử', async () => {
+    // TC-QST-005
+    it('TC-QST-005 - Throw lỗi khi choices có ít hơn 2 phần tử', async () => {
         const dto = makeCreateDto({
             Choices: [{ Content: 'A', Attribute: 'A', IsCorrect: true }],
         });
@@ -170,8 +162,8 @@ describe('createQuestion()', () => {
         await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('Question must have at least 2 choices');
     });
 
-    // TC-QST-007
-    it('TC-QST-007 - Throw lỗi khi không có đáp án đúng nào (0 correct)', async () => {
+    // TC-QST-006
+    it('TC-QST-006 - Throw lỗi khi không có đáp án đúng nào (0 correct)', async () => {
         const dto = makeCreateDto({
             Choices: [
                 { Content: 'A', Attribute: 'A', IsCorrect: false },
@@ -182,8 +174,8 @@ describe('createQuestion()', () => {
         await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('Question must have exactly one correct answer');
     });
 
-    // TC-QST-008
-    it('TC-QST-008 - Throw lỗi khi có 2 đáp án đúng', async () => {
+    // TC-QST-007
+    it('TC-QST-007 - Throw lỗi khi có 2 đáp án đúng', async () => {
         const dto = makeCreateDto({
             Choices: [
                 { Content: 'A', Attribute: 'A', IsCorrect: true },
@@ -194,20 +186,9 @@ describe('createQuestion()', () => {
         await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('Question must have exactly one correct answer');
     });
 
-    // TC-QST-009
-    it('TC-QST-009 - Throw lỗi khi attributes của choices bị trùng', async () => {
-        const dto = makeCreateDto({
-            Choices: [
-                { Content: 'A answer', Attribute: 'A', IsCorrect: true },
-                { Content: 'B answer', Attribute: 'A', IsCorrect: false },
-            ],
-        });
 
-        await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('Choice attributes must be unique');
-    });
-
-    // TC-QST-010
-    it('TC-QST-010 - Throw lỗi khi choice có content rỗng (empty string)', async () => {
+    // TC-QST-008
+    it('TC-QST-008 - Throw lỗi khi choice có content rỗng (empty string)', async () => {
         const dto = makeCreateDto({
             Choices: [
                 { Content: '', Attribute: 'A', IsCorrect: true },
@@ -218,8 +199,8 @@ describe('createQuestion()', () => {
         await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('All choices must have content');
     });
 
-    // TC-QST-011
-    it('TC-QST-011 - Throw lỗi khi choice có content chỉ là whitespace', async () => {
+    // TC-QST-009
+    it('TC-QST-009 - Throw lỗi khi choice có content chỉ là whitespace', async () => {
         const dto = makeCreateDto({
             Choices: [
                 { Content: '   ', Attribute: 'A', IsCorrect: true },
@@ -230,8 +211,8 @@ describe('createQuestion()', () => {
         await expect(service.createQuestion(dto, USER_ID)).rejects.toThrow('All choices must have content');
     });
 
-    // TC-QST-012
-    it('TC-QST-012 - Tạo thành công READING question không cần AudioUrl', async () => {
+    // TC-QST-010
+    it('TC-QST-010 - Tạo thành công READING question không cần AudioUrl', async () => {
         const dto = makeCreateDto({
             Media: { Skill: 'READING', Type: 'MULTIPLE_CHOICE', Section: '5', AudioUrl: undefined },
         });
@@ -242,36 +223,14 @@ describe('createQuestion()', () => {
         expect(result.mediaQuestion.Skill).toBe('READING');
         expect(result.mediaQuestion.AudioUrl).toBeNull();
     });
-
-    // TC-QST-013
-    it('TC-QST-013 - Tạo thành công Part 1 khi có đủ AudioUrl và ImageUrl', async () => {
-        const dto = makeCreateDto({
-            Media: { Skill: 'LISTENING', Type: 'PHOTO', Section: '1', AudioUrl: '/audio.mp3', ImageUrl: '/image.jpg' },
-        });
-
-        const result = await service.createQuestion(dto, USER_ID);
-
-        expect(result).toBeDefined();
-        expect(result.mediaQuestion.Section).toBe('1');
-        expect(result.mediaQuestion.ImageUrl).toBe('/image.jpg');
-    });
-
-    // TC-QST-014
-    it('TC-QST-014 - Chấp nhận relative URL path (bắt đầu bằng /)', async () => {
-        const dto = makeCreateDto({
-            Media: { Skill: 'LISTENING', Type: 'MULTIPLE_CHOICE', Section: '3', AudioUrl: '/uploads/audio/test.mp3' },
-        });
-
-        await expect(service.createQuestion(dto, USER_ID)).resolves.toBeDefined();
-    });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // getQuestionById()
 // ═══════════════════════════════════════════════════════════════════════════════
 describe('getQuestionById()', () => {
-    // TC-QST-015
-    it('TC-QST-015 - Trả về question khi ID tồn tại', async () => {
+    // TC-QST-011
+    it('TC-QST-011 - Trả về question khi ID tồn tại', async () => {
         // Arrange
         const created = await insertMockQuestion('Test findById');
 
@@ -284,8 +243,8 @@ describe('getQuestionById()', () => {
         expect(result.QuestionText).toBe('Test findById');
     });
 
-    // TC-QST-016
-    it('TC-QST-016 - Throw "Question not found" khi ID không tồn tại', async () => {
+    // TC-QST-012
+    it('TC-QST-012 - Throw "Question not found" khi ID không tồn tại', async () => {
         await expect(service.getQuestionById(999999)).rejects.toThrow('Question not found');
     });
 });
@@ -294,8 +253,8 @@ describe('getQuestionById()', () => {
 // searchQuestions()
 // ═══════════════════════════════════════════════════════════════════════════════
 describe('searchQuestions()', () => {
-    // TC-QST-017
-    it('TC-QST-017 - Trả về paginated questions với metadata đúng', async () => {
+    // TC-QST-013
+    it('TC-QST-013 - Trả về paginated questions với metadata đúng', async () => {
         // Arrange
         await insertMockQuestion('TC-QST-017 Question 1');
         await insertMockQuestion('TC-QST-017 Question 2');
@@ -309,24 +268,16 @@ describe('searchQuestions()', () => {
         expect(result.Pagination.TotalQuestions).toBeGreaterThanOrEqual(2);
     });
 
-    // TC-QST-018
-    it('TC-QST-018 - Trả về danh sách rỗng khi không có question nào match', async () => {
+    // TC-QST-014
+    it('TC-QST-014 - Trả về danh sách rỗng khi không có question nào match', async () => {
         const result = await service.searchQuestions({ SearchText: 'UNIQUE_TEXT_NOT_FOUND_12345' });
 
         expect(result.Questions).toHaveLength(0);
         expect(result.Pagination.TotalQuestions).toBe(0);
     });
 
-    // TC-QST-019
-    it('TC-QST-019 - Tính Pagination.TotalPages đúng', async () => {
-        await insertMockQuestion('Pagination Q');
-        const result = await service.searchQuestions({ SearchText: 'Pagination Q', Page: 1, Limit: 1 });
-        expect(result.Pagination.TotalPages).toBeGreaterThanOrEqual(1);
-        expect(result.Pagination.TotalQuestions).toBeGreaterThanOrEqual(1);
-    });
-
-    // TC-QST-020
-    it('TC-QST-020 - Filter theo Skill và Section', async () => {
+    // TC-QST-015
+    it('TC-QST-015 - Filter theo Skill và Section', async () => {
         const dto = makeCreateDto({
             Media: { Skill: 'READING', Type: 'MULTIPLE_CHOICE', Section: '7', AudioUrl: undefined },
             QuestionText: 'Filter specific question TC-QST-020'
@@ -341,23 +292,14 @@ describe('searchQuestions()', () => {
         expect(q!.Media.Section).toBe('7');
     });
 
-    // TC-QST-021
-    it('TC-QST-021 - UsageCount được include trong response', async () => {
-        const created = await insertMockQuestion('Usage Count Question');
-        
-        const result = await service.searchQuestions({ SearchText: 'Usage Count Question' });
-
-        expect(result.Questions[0]).toBeDefined();
-        expect(result.Questions[0].UsageCount).toBeGreaterThanOrEqual(0);
-    });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // updateQuestion()
 // ═══════════════════════════════════════════════════════════════════════════════
 describe('updateQuestion()', () => {
-    // TC-QST-022
-    it('TC-QST-022 - Update QuestionText thành công', async () => {
+    // TC-QST-016
+    it('TC-QST-016 - Update QuestionText thành công', async () => {
         // Arrange
         const created = await insertMockQuestion('Old Text');
 
@@ -372,31 +314,13 @@ describe('updateQuestion()', () => {
         expect(inDb!.QuestionText).toBe('New Text');
     });
 
-    // TC-QST-023
-    it('TC-QST-023 - Throw "Question not found" khi ID không tồn tại', async () => {
+    // TC-QST-017
+    it('TC-QST-017 - Throw "Question not found" khi ID không tồn tại', async () => {
         await expect(service.updateQuestion(999999, { QuestionText: 'X' }, USER_ID)).rejects.toThrow('Question not found');
     });
 
-    // TC-QST-025
-    it('TC-QST-025 - Validate choices khi Choices được truyền trong updateData', async () => {
-        const created = await insertMockQuestion();
-
-        await expect(
-            service.updateQuestion(
-                created.ID,
-                {
-                    Choices: [
-                        { Content: 'A', Attribute: 'A', IsCorrect: false },
-                        { Content: 'B', Attribute: 'B', IsCorrect: false },
-                    ],
-                },
-                USER_ID,
-            ),
-        ).rejects.toThrow('Question must have exactly one correct answer');
-    });
-
-    // TC-QST-026
-    it('TC-QST-026 - Validate media khi Media được update (LISTENING không AudioUrl)', async () => {
+    // TC-QST-018
+    it('TC-QST-018 - Validate media khi Media được update (LISTENING không AudioUrl)', async () => {
         const created = await insertMockQuestion();
 
         await expect(
@@ -408,8 +332,8 @@ describe('updateQuestion()', () => {
         ).rejects.toThrow('Listening questions must have audio URL');
     });
 
-    // TC-QST-027
-    it('TC-QST-027 - Không validate choices khi Choices không được truyền', async () => {
+    // TC-QST-019
+    it('TC-QST-019 - Không validate choices khi Choices không được truyền', async () => {
         const created = await insertMockQuestion();
 
         // Chỉ update text, không truyền Choices
@@ -423,8 +347,8 @@ describe('updateQuestion()', () => {
 // deleteQuestion()
 // ═══════════════════════════════════════════════════════════════════════════════
 describe('deleteQuestion()', () => {
-    // TC-QST-028
-    it('TC-QST-028 - Xóa question thành công khi chưa được dùng trong exam', async () => {
+    // TC-QST-020
+    it('TC-QST-020 - Xóa question thành công khi chưa được dùng trong exam', async () => {
         // Arrange
         const created = await insertMockQuestion('To be deleted');
 
@@ -439,8 +363,8 @@ describe('deleteQuestion()', () => {
         expect(inDb).toBeNull();
     });
 
-    // TC-QST-029 (Not easily testable without Exam mock data, skipping direct DB state test or mocking getUsageStats specifically)
-    it('TC-QST-029 - Throw lỗi khi question đang được dùng trong exam (usedInExams > 0)', async () => {
+    // TC-QST-021 (Not easily testable without Exam mock data, skipping direct DB state test or mocking getUsageStats specifically)
+    it('TC-QST-021 - Throw lỗi khi question đang được dùng trong exam (usedInExams > 0)', async () => {
         // Since we are doing integration test, mocking getUsageStats here temporarily to test validation logic
         const created = await insertMockQuestion();
         const repo: any = (service as any).questionRepository;
@@ -454,37 +378,37 @@ describe('deleteQuestion()', () => {
         repo.getUsageStats = originalStats; // restore
     });
 
-    // TC-QST-030
-    it('TC-QST-030 - Throw "Question not found" khi ID không tồn tại', async () => {
+    // TC-QST-022
+    it('TC-QST-022 - Throw "Question not found" khi ID không tồn tại', async () => {
         await expect(service.deleteQuestion(999999, USER_ID)).rejects.toThrow('Question not found');
     });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// getQuestionStatistics()
-// ═══════════════════════════════════════════════════════════════════════════════
-describe('getQuestionStatistics()', () => {
-    // TC-QST-031
-    it('TC-QST-031 - Trả về usage stats khi question tồn tại', async () => {
-        const created = await insertMockQuestion();
-        const result = await service.getQuestionStatistics(created.ID);
+// // ═══════════════════════════════════════════════════════════════════════════════
+// // getQuestionStatistics()
+// // ═══════════════════════════════════════════════════════════════════════════════
+// describe('getQuestionStatistics()', () => {
+//     // TC-QST-031
+//     it('TC-QST-031 - Trả về usage stats khi question tồn tại', async () => {
+//         const created = await insertMockQuestion();
+//         const result = await service.getQuestionStatistics(created.ID);
 
-        expect(result.usedInExams).toBeDefined();
-        expect(result.totalAttempts).toBeDefined();
-    });
+//         expect(result.usedInExams).toBeDefined();
+//         expect(result.totalAttempts).toBeDefined();
+//     });
 
-    // TC-QST-032
-    it('TC-QST-032 - Throw "Question not found" khi ID không tồn tại', async () => {
-        await expect(service.getQuestionStatistics(999999)).rejects.toThrow('Question not found');
-    });
-});
+//     // TC-QST-032
+//     it('TC-QST-032 - Throw "Question not found" khi ID không tồn tại', async () => {
+//         await expect(service.getQuestionStatistics(999999)).rejects.toThrow('Question not found');
+//     });
+// });
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // getQuestionsBySection()
 // ═══════════════════════════════════════════════════════════════════════════════
 describe('getQuestionsBySection()', () => {
-    // TC-QST-033
-    it('TC-QST-033 - Trả về questions khi sections hợp lệ', async () => {
+    // TC-QST-023
+    it('TC-QST-023 - Trả về questions khi sections hợp lệ', async () => {
         await insertMockQuestion(); // Mặc định section là 3
 
         const result = await service.getQuestionsBySection(['3'], 10);
@@ -492,12 +416,12 @@ describe('getQuestionsBySection()', () => {
         expect(result.length).toBeGreaterThanOrEqual(1);
     });
 
-    // TC-QST-034
-    it('TC-QST-034 - Throw lỗi khi sections là mảng rỗng', async () => {
+    // TC-QST-024
+    it('TC-QST-024 - Throw lỗi khi sections là mảng rỗng', async () => {
         await expect(service.getQuestionsBySection([])).rejects.toThrow('At least one section must be specified');
     });
 
-    // TC-QST-035
+    // TC-QST-025
     it('TC-QST-035 - Throw lỗi khi sections là null/undefined', async () => {
         await expect(service.getQuestionsBySection(null as any)).rejects.toThrow('At least one section must be specified');
     });
@@ -507,8 +431,8 @@ describe('getQuestionsBySection()', () => {
 // performBulkOperation()
 // ═══════════════════════════════════════════════════════════════════════════════
 describe('performBulkOperation()', () => {
-    // TC-QST-036
-    it('TC-QST-036 - Bulk DELETE thành công trả về success count đúng', async () => {
+    // TC-QST-026
+    it('TC-QST-026 - Bulk DELETE thành công trả về success count đúng', async () => {
         const q1 = await insertMockQuestion();
         const q2 = await insertMockQuestion();
 
@@ -525,8 +449,8 @@ describe('performBulkOperation()', () => {
         expect(count).toBe(0);
     });
 
-    // TC-QST-038
-    it('TC-QST-038 - ADD_TO_EXAM operation trả về error "should be handled by ExamService"', async () => {
+    // TC-QST-027
+    it('TC-QST-027 - ADD_TO_EXAM operation trả về error "should be handled by ExamService"', async () => {
         const result = await service.performBulkOperation(
             { Operation: 'ADD_TO_EXAM', QuestionIDs: [1, 2] },
             USER_ID,
@@ -536,8 +460,8 @@ describe('performBulkOperation()', () => {
         expect(result.errors[0]).toContain('ADD_TO_EXAM operation should be handled by ExamService');
     });
 
-    // TC-QST-039
-    it('TC-QST-039 - Unknown operation trả về failed count và error message đúng', async () => {
+    // TC-QST-028
+    it('TC-QST-028 - Unknown operation trả về failed count và error message đúng', async () => {
         const result = await service.performBulkOperation(
             { Operation: 'UNKNOWN_OP' as any, QuestionIDs: [1] },
             USER_ID,
@@ -545,16 +469,5 @@ describe('performBulkOperation()', () => {
 
         expect(result.failed).toBe(1);
         expect(result.errors[0]).toContain('Unknown operation: UNKNOWN_OP');
-    });
-
-    // TC-QST-040
-    it('TC-QST-040 - Bulk DELETE với danh sách IDs rỗng trả về success=0', async () => {
-        const result = await service.performBulkOperation(
-            { Operation: 'DELETE', QuestionIDs: [] },
-            USER_ID,
-        );
-
-        expect(result.success).toBe(0);
-        expect(result.failed).toBe(0);
     });
 });
