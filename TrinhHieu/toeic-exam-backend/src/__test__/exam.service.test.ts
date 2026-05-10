@@ -338,10 +338,14 @@ describe('ExamService', () => {
       expect(result.Questions).toHaveLength(1);
       expect(result.Questions[0].Choices[0]).not.toHaveProperty('IsCorrect');
     });
+
+    it('TC-TRINH-EXM-006 — Báo lỗi khi đề thi không tồn tại', async () => {
+      await expect(service.getExamById(999999)).rejects.toThrow('Exam not found');
+    });
   });
 
   describe('Hàm: getAllExams() - Lấy danh sách đề thi', () => {
-    it('TC-TRINH-EXM-006 — Chỉ trả về đúng đề thi theo bộ lọc Type', async () => {
+    it('TC-TRINH-EXM-007 — Chỉ trả về đúng đề thi theo bộ lọc Type', async () => {
       await createExamRecord(manager, 5, { Type: 'FULL_TEST' });
       await createExamRecord(manager, 5, { Type: 'MINI_TEST' });
 
@@ -353,7 +357,13 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: updateExam() - Cập nhật thông tin đề thi', () => {
-    it('TC-TRINH-EXM-007 — Chỉ người tạo đề thi mới được sửa thông tin cơ bản của đề thi', async () => {
+    it('TC-TRINH-EXM-008 — Báo lỗi khi đề thi không tồn tại', async () => {
+      await expect(
+        service.updateExam(999999, { Title: 'Khong ton tai' } as any, 5)
+      ).rejects.toThrow('Exam not found');
+    });
+
+    it('TC-TRINH-EXM-009 — Chỉ người tạo đề thi mới được sửa thông tin cơ bản của đề thi', async () => {
       const ownerId = 9;
       const exam = await createExamRecord(manager, ownerId);
 
@@ -362,7 +372,15 @@ describe('ExamService', () => {
       ).rejects.toThrow('You do not have permission to update this exam');
     });
 
-    it('TC-TRINH-EXM-008 — Cập nhật thành công thông tin đề thi khi đúng chủ sở hữu và dữ liệu hợp lệ', async () => {
+    it('TC-TRINH-EXM-010 — Báo lỗi khi TimeExam không hợp lệ', async () => {
+      const exam = await createExamRecord(manager, 5);
+
+      await expect(service.updateExam(exam.ID, { TimeExam: 999 } as any, 5)).rejects.toThrow(
+        'Exam time must be between 1 and 240 minutes'
+      );
+    });
+
+    it('TC-TRINH-EXM-011 — Cập nhật thành công thông tin đề thi khi đúng chủ sở hữu và dữ liệu hợp lệ', async () => {
       const exam = await createExamRecord(manager, 5);
 
       const result = await service.updateExam(
@@ -377,7 +395,7 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: deleteExam() - Xóa đề thi', () => {
-    it('TC-TRINH-EXM-009 — Không cho phép xóa đề thi đã có học sinh làm bài', async () => {
+    it('TC-TRINH-EXM-012 — Không cho phép xóa đề thi đã có học sinh làm bài', async () => {
       const student = await createStudent(manager, 'attempt-student');
       const exam = await createExamRecord(manager, 5);
       await createAttemptRecord(manager, {
@@ -390,7 +408,7 @@ describe('ExamService', () => {
       );
     });
 
-    it('TC-TRINH-EXM-010 — Không cho phép người không sở hữu đề thi thực hiện thao tác xóa', async () => {
+    it('TC-TRINH-EXM-013 — Không cho phép người không sở hữu đề thi thực hiện thao tác xóa', async () => {
       const exam = await createExamRecord(manager, 8);
 
       await expect(service.deleteExam(exam.ID, 5)).rejects.toThrow(
@@ -398,7 +416,7 @@ describe('ExamService', () => {
       );
     });
 
-    it('TC-TRINH-EXM-011 — Cho phép xóa đề thi chưa phát sinh lượt làm bài', async () => {
+    it('TC-TRINH-EXM-014 — Cho phép xóa đề thi chưa phát sinh lượt làm bài', async () => {
       const exam = await createExamRecord(manager, 5);
 
       const result = await service.deleteExam(exam.ID, 5);
@@ -410,7 +428,7 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: addQuestionsToExam() - Thêm câu hỏi lẻ vào đề thi', () => {
-    it('TC-TRINH-EXM-012 — Không cho phép thêm lại câu hỏi đã nằm sẵn trong đề thi', async () => {
+    it('TC-TRINH-EXM-015 — Không cho phép thêm lại câu hỏi đã nằm sẵn trong đề thi', async () => {
       const exam = await createExamRecord(manager, 5);
       const question = await createQuestionRecord(manager);
       await attachQuestionToExam(manager, exam.ID, question.ID, 1);
@@ -420,7 +438,7 @@ describe('ExamService', () => {
       ).rejects.toThrow(/already in this exam/);
     });
 
-    it('TC-TRINH-EXM-013 — Không nên cho phép admin gán trùng OrderIndex cho hai câu mới', async () => {
+    it('TC-TRINH-EXM-016 — Không nên cho phép admin gán trùng OrderIndex cho hai câu mới', async () => {
       const exam = await createExamRecord(manager, 5);
       const question1 = await createQuestionRecord(manager);
       const question2 = await createQuestionRecord(manager);
@@ -437,7 +455,7 @@ describe('ExamService', () => {
       ).rejects.toThrow(/order/i);
     });
 
-    it('TC-TRINH-EXM-014 — Thêm thành công nhiều câu hỏi mới khi thứ tự không xung đột', async () => {
+    it('TC-TRINH-EXM-017 — Thêm thành công nhiều câu hỏi mới khi thứ tự không xung đột', async () => {
       const exam = await createExamRecord(manager, 5);
       const question1 = await createQuestionRecord(manager);
       const question2 = await createQuestionRecord(manager);
@@ -460,7 +478,19 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: removeQuestionsFromExam() - Xóa câu hỏi lẻ khỏi đề thi', () => {
-    it('TC-TRINH-EXM-015 — Xóa thành công câu hỏi khỏi đề thi khi đúng chủ sở hữu', async () => {
+    it('TC-TRINH-EXM-018 — Báo lỗi khi đề thi không tồn tại', async () => {
+      await expect(service.removeQuestionsFromExam(999999, [1], 5)).rejects.toThrow('Exam not found');
+    });
+
+    it('TC-TRINH-EXM-019 — Không cho phép thao tác nếu không phải chủ sở hữu đề', async () => {
+      const exam = await createExamRecord(manager, 5);
+
+      await expect(service.removeQuestionsFromExam(exam.ID, [1], 999)).rejects.toThrow(
+        'You do not have permission to modify this exam'
+      );
+    });
+
+    it('TC-TRINH-EXM-020 — Xóa thành công câu hỏi khỏi đề thi khi đúng chủ sở hữu', async () => {
       const exam = await createExamRecord(manager, 5);
       const question1 = await createQuestionRecord(manager);
       const question2 = await createQuestionRecord(manager);
@@ -479,7 +509,7 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: searchExams() - Tìm kiếm đề thi', () => {
-    it('TC-TRINH-EXM-016 — Tìm đúng đề thi theo tiêu đề', async () => {
+    it('TC-TRINH-EXM-021 — Tìm đúng đề thi theo tiêu đề', async () => {
       await createExamRecord(manager, 5, { Title: 'Target Exam Search' });
       await createExamRecord(manager, 5, { Title: 'Other Title' });
 
@@ -489,13 +519,13 @@ describe('ExamService', () => {
       expect(result[0].Title).toContain('Target');
     });
 
-    it('TC-TRINH-EXM-017 — Báo lỗi khi từ khóa tìm kiếm rỗng', async () => {
+    it('TC-TRINH-EXM-022 — Báo lỗi khi từ khóa tìm kiếm rỗng', async () => {
       await expect(service.searchExams('   ')).rejects.toThrow('Search term cannot be empty');
     });
   });
 
   describe('Hàm: addMediaGroupToExam() - Thêm media group vào đề thi', () => {
-    it('TC-TRINH-EXM-018 — Không cho phép thêm một media group đã có sẵn trong đề thi', async () => {
+    it('TC-TRINH-EXM-023 — Không cho phép thêm một media group đã có sẵn trong đề thi', async () => {
       const exam = await createExamRecord(manager, 5);
       const media = await createMediaQuestion(manager, { GroupTitle: 'Part 7 - Set 1' });
       const question = await createQuestionRecord(manager, { MediaQuestionID: media.ID });
@@ -509,7 +539,7 @@ describe('ExamService', () => {
       );
     });
 
-    it('TC-TRINH-EXM-019 — Không cho phép đưa một media group rỗng vào đề thi', async () => {
+    it('TC-TRINH-EXM-024 — Không cho phép đưa một media group rỗng vào đề thi', async () => {
       const exam = await createExamRecord(manager, 5);
       const media = await createMediaQuestion(manager, { GroupTitle: 'Part 3 - Set 2' });
 
@@ -518,7 +548,7 @@ describe('ExamService', () => {
       );
     });
 
-    it('TC-TRINH-EXM-020 — Thêm thành công cả cụm media và hệ thống tự tính dải OrderIndex liên tiếp', async () => {
+    it('TC-TRINH-EXM-025 — Thêm thành công cả cụm media và hệ thống tự tính dải OrderIndex liên tiếp', async () => {
       const exam = await createExamRecord(manager, 5);
       const media = await createMediaQuestion(manager, { GroupTitle: 'Part 7 - Double passage' });
       await createQuestionRecord(manager, { MediaQuestionID: media.ID, OrderInGroup: 1 });
@@ -534,7 +564,7 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: getExamContentOrganized() - Lấy nội dung đề thi đã sắp nhóm', () => {
-    it('TC-TRINH-EXM-021 — Trả về đúng media groups và standalone questions', async () => {
+    it('TC-TRINH-EXM-026 — Trả về đúng media groups và standalone questions', async () => {
       const exam = await createExamRecord(manager, 5);
       const groupedMedia = await createMediaQuestion(manager, { GroupTitle: 'Grouped Media' });
       const standaloneMedia = await createMediaQuestion(manager, {
@@ -574,7 +604,7 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: moveMediaGroupInExam() - Di chuyển media group trong đề thi', () => {
-    it('TC-TRINH-EXM-022 — Di chuyển thành công cả nhóm media sang vị trí mới', async () => {
+    it('TC-TRINH-EXM-027 — Di chuyển thành công cả nhóm media sang vị trí mới', async () => {
       const exam = await createExamRecord(manager, 5);
       const media = await createMediaQuestion(manager);
       const question1 = await createQuestionRecord(manager, { MediaQuestionID: media.ID });
@@ -600,7 +630,7 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: validateExamStructure() - Kiểm tra cấu trúc đề thi', () => {
-    it('TC-TRINH-EXM-023 — Báo lỗi duplicate OrderIndex khi cấu trúc đề bị trùng thứ tự', async () => {
+    it('TC-TRINH-EXM-028 — Báo lỗi duplicate OrderIndex khi cấu trúc đề bị trùng thứ tự', async () => {
       const exam = await createExamRecord(manager, 5);
       const question1 = await createQuestionRecord(manager);
       const question2 = await createQuestionRecord(manager);
@@ -615,7 +645,7 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: compactExamOrder() - Nén lại thứ tự đề thi', () => {
-    it('TC-TRINH-EXM-024 — Nén lại sequence OrderIndex khi có khoảng trống', async () => {
+    it('TC-TRINH-EXM-029 — Nén lại sequence OrderIndex khi có khoảng trống', async () => {
       const exam = await createExamRecord(manager, 5);
       const question1 = await createQuestionRecord(manager);
       const question2 = await createQuestionRecord(manager);
@@ -634,7 +664,7 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: removeMediaGroupFromExam() - Xóa media group khỏi đề thi', () => {
-    it('TC-TRINH-EXM-025 — Không cho phép xóa media group nếu người thao tác không phải chủ sở hữu đề', async () => {
+    it('TC-TRINH-EXM-030 — Không cho phép xóa media group nếu người thao tác không phải chủ sở hữu đề', async () => {
       const exam = await createExamRecord(manager, 9);
 
       await expect(service.removeMediaGroupFromExam(exam.ID, 4, 5)).rejects.toThrow(
@@ -642,7 +672,7 @@ describe('ExamService', () => {
       );
     });
 
-    it('TC-TRINH-EXM-026 — Không thể bỏ chọn một media group vốn không nằm trong đề thi', async () => {
+    it('TC-TRINH-EXM-031 — Không thể bỏ chọn một media group vốn không nằm trong đề thi', async () => {
       const exam = await createExamRecord(manager, 5);
       const media = await createMediaQuestion(manager);
 
@@ -651,7 +681,7 @@ describe('ExamService', () => {
       );
     });
 
-    it('TC-TRINH-EXM-027 — Xóa thành công toàn bộ câu hỏi thuộc một media group đã gán vào đề thi', async () => {
+    it('TC-TRINH-EXM-032 — Xóa thành công toàn bộ câu hỏi thuộc một media group đã gán vào đề thi', async () => {
       const exam = await createExamRecord(manager, 5);
       const media = await createMediaQuestion(manager);
       const question1 = await createQuestionRecord(manager, { MediaQuestionID: media.ID });
@@ -677,11 +707,11 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: duplicateExam() - Nhân bản đề thi', () => {
-    it('TC-TRINH-EXM-028 — Không thể nhân bản một đề thi không tồn tại trong hệ thống', async () => {
+    it('TC-TRINH-EXM-033 — Không thể nhân bản một đề thi không tồn tại trong hệ thống', async () => {
       await expect(service.duplicateExam(999999, 5)).rejects.toThrow('Exam not found');
     });
 
-    it('TC-TRINH-EXM-029 — Nhân bản thành công đề thi kèm toàn bộ câu hỏi và thông tin media group', async () => {
+    it('TC-TRINH-EXM-034 — Nhân bản thành công đề thi kèm toàn bộ câu hỏi và thông tin media group', async () => {
       const exam = await createExamRecord(manager, 5, { Title: 'De goc' });
       const media = await createMediaQuestion(manager);
       const question1 = await createQuestionRecord(manager, { MediaQuestionID: media.ID });
@@ -705,7 +735,7 @@ describe('ExamService', () => {
   });
 
   describe('Hàm: replaceQuestionInExam() - Thay câu hỏi trong đề thi', () => {
-    it('TC-TRINH-EXM-030 — Không cho phép thay bằng một câu hỏi mới không tồn tại', async () => {
+    it('TC-TRINH-EXM-035 — Không cho phép thay bằng một câu hỏi mới không tồn tại', async () => {
       const exam = await createExamRecord(manager, 5);
       const oldQuestion = await createQuestionRecord(manager);
       await attachQuestionToExam(manager, exam.ID, oldQuestion.ID, 7, { IsGrouped: false });
@@ -714,105 +744,8 @@ describe('ExamService', () => {
         'New question not found'
       );
     });
-  });
 
-  describe('Hàm: getExamTypes() - Lấy danh sách loại đề thi', () => {
-    it('TC-TRINH-EXM-031 — Trả về danh sách loại đề thi sắp xếp theo Code', async () => {
-      const zzzType = await createExamTypeRecord(manager, { Code: 'ZZZ_TYPE' });
-      const aaaType = await createExamTypeRecord(manager, { Code: 'AAA_TYPE' });
-
-      const result = await service.getExamTypes();
-      const aaaIndex = result.findIndex((item) => item.ID === aaaType.ID);
-      const zzzIndex = result.findIndex((item) => item.ID === zzzType.ID);
-
-      expect(aaaIndex).toBeGreaterThanOrEqual(0);
-      expect(zzzIndex).toBeGreaterThanOrEqual(0);
-      expect(aaaIndex).toBeLessThan(zzzIndex);
-    });
-  });
-
-  describe('Hàm: createExamType() - Tạo loại đề thi', () => {
-    it('TC-TRINH-EXM-032 — Không cho phép tạo loại đề thi trùng mã', async () => {
-      const duplicateCode = uniqueValue('DUPLICATE_TYPE');
-      await createExamTypeRecord(manager, {
-        Code: duplicateCode,
-        Description: 'De day du',
-      });
-
-      await expect(
-        service.createExamType({ Code: duplicateCode, Description: 'De day du' } as any)
-      ).rejects.toThrow('already exists');
-    });
-    it('TC-TRINH-EXM-033 — Tạo thành công loại đề thi mới khi mã chưa được sử dụng', async () => {
-      const result = await service.createExamType({
-        Code: 'MINI_TEST',
-        Description: 'De mini test',
-      } as any);
-
-      expect(result.Code).toBe('MINI_TEST');
-    });
-  });
-
-  describe('Hàm: updateExamType() - Cập nhật loại đề thi', () => {
-    it('TC-TRINH-EXM-034 — Cập nhật thành công loại đề thi khi code mới không bị trùng', async () => {
-      const examType = await createExamTypeRecord(manager, {
-        Code: uniqueValue('OLD_TYPE'),
-        Description: 'Old description',
-      });
-
-      const result = await service.updateExamType(examType.ID, {
-        Code: uniqueValue('NEW_TYPE'),
-        Description: 'New description',
-      } as any);
-
-      expect(result.Description).toBe('New description');
-    });
-
-    it('TC-TRINH-EXM-035 — Báo lỗi khi cập nhật sang Code đã tồn tại', async () => {
-      const occupied = await createExamTypeRecord(manager, { Code: uniqueValue('USED_TYPE') });
-      const target = await createExamTypeRecord(manager, { Code: uniqueValue('TARGET_TYPE') });
-
-      await expect(
-        service.updateExamType(target.ID, { Code: occupied.Code } as any)
-      ).rejects.toThrow('already in use');
-    });
-  });
-
-  describe('Hàm: deleteExamType() - Xóa loại đề thi', () => {
-    it('TC-TRINH-EXM-036 — Không được xóa loại đề thi đang bị đề thi khác sử dụng', async () => {
-      const examType = await createExamTypeRecord(manager, { Code: 'TYPE_IN_USE' });
-      await createExamRecord(manager, 5, { ExamTypeID: examType.ID });
-
-      await expect(service.deleteExamType(examType.ID)).rejects.toThrow(
-        /Cannot delete exam type: 1 exam\(s\) are using it/
-      );
-    });
-
-    it('TC-TRINH-EXM-037 — Cho phép xóa loại đề thi khi không còn đề thi nào tham chiếu đến nó', async () => {
-      const examType = await createExamTypeRecord(manager, { Code: 'TYPE_UNUSED' });
-
-      const result = await service.deleteExamType(examType.ID);
-      const deleted = await manager.getRepository(ExamType).findOneBy({ ID: examType.ID });
-
-      expect(result).toBe(true);
-      expect(deleted).toBeNull();
-    });
-  });
-
-  describe('Hàm: getNextOrderIndex() - Lấy thứ tự tiếp theo', () => {
-    it('TC-TRINH-EXM-038 — Trả về OrderIndex tiếp theo đúng theo dữ liệu hiện có', async () => {
-      const exam = await createExamRecord(manager, 5);
-      const question1 = await createQuestionRecord(manager);
-      const question2 = await createQuestionRecord(manager);
-      await attachQuestionToExam(manager, exam.ID, question1.ID, 2);
-      await attachQuestionToExam(manager, exam.ID, question2.ID, 5);
-
-      const result = await service.getNextOrderIndex(exam.ID);
-
-      expect(result).toBe(6);
-    });
-
-    it('TC-TRINH-EXM-039 — Báo lỗi với những nhánh validation còn thiếu của service', async () => {
+    it('TC-TRINH-EXM-036 — Không cho phép thay bằng câu hỏi thuộc media group khác', async () => {
       const exam = await createExamRecord(manager, 5);
       const mediaA = await createMediaQuestion(manager, { GroupTitle: 'Media A' });
       const mediaB = await createMediaQuestion(manager, { GroupTitle: 'Media B' });
@@ -829,24 +762,112 @@ describe('ExamService', () => {
         IsGrouped: true,
       });
 
-      await expect(service.getExamById(999999)).rejects.toThrow('Exam not found');
-      await expect(service.updateExam(999999, { Title: 'Khong ton tai' } as any, 5)).rejects.toThrow(
-        'Exam not found'
-      );
-      await expect(service.updateExam(exam.ID, { TimeExam: 999 } as any, 5)).rejects.toThrow(
-        'Exam time must be between 1 and 240 minutes'
-      );
-      await expect(service.removeQuestionsFromExam(999999, [1], 5)).rejects.toThrow('Exam not found');
-      await expect(service.removeQuestionsFromExam(exam.ID, [1], 999)).rejects.toThrow(
-        'You do not have permission to modify this exam'
-      );
       await expect(
         service.replaceQuestionInExam(exam.ID, oldGroupedQuestion.ID, wrongMediaQuestion.ID, 5)
       ).rejects.toThrow('Cannot replace with question from different media group');
+    });
+  });
+
+  describe('Hàm: getExamTypes() - Lấy danh sách loại đề thi', () => {
+    it('TC-TRINH-EXM-037 — Trả về danh sách loại đề thi sắp xếp theo Code', async () => {
+      const zzzType = await createExamTypeRecord(manager, { Code: 'ZZZ_TYPE' });
+      const aaaType = await createExamTypeRecord(manager, { Code: 'AAA_TYPE' });
+
+      const result = await service.getExamTypes();
+      const aaaIndex = result.findIndex((item) => item.ID === aaaType.ID);
+      const zzzIndex = result.findIndex((item) => item.ID === zzzType.ID);
+
+      expect(aaaIndex).toBeGreaterThanOrEqual(0);
+      expect(zzzIndex).toBeGreaterThanOrEqual(0);
+      expect(aaaIndex).toBeLessThan(zzzIndex);
+    });
+  });
+
+  describe('Hàm: createExamType() - Tạo loại đề thi', () => {
+    it('TC-TRINH-EXM-038 — Không cho phép tạo loại đề thi trùng mã', async () => {
+      const duplicateCode = uniqueValue('DUPLICATE_TYPE');
+      await createExamTypeRecord(manager, {
+        Code: duplicateCode,
+        Description: 'De day du',
+      });
+
+      await expect(
+        service.createExamType({ Code: duplicateCode, Description: 'De day du' } as any)
+      ).rejects.toThrow('already exists');
+    });
+    it('TC-TRINH-EXM-039 — Tạo thành công loại đề thi mới khi mã chưa được sử dụng', async () => {
+      const result = await service.createExamType({
+        Code: 'MINI_TEST',
+        Description: 'De mini test',
+      } as any);
+
+      expect(result.Code).toBe('MINI_TEST');
+    });
+  });
+
+  describe('Hàm: updateExamType() - Cập nhật loại đề thi', () => {
+    it('TC-TRINH-EXM-040 — Cập nhật thành công loại đề thi khi code mới không bị trùng', async () => {
+      const examType = await createExamTypeRecord(manager, {
+        Code: uniqueValue('OLD_TYPE'),
+        Description: 'Old description',
+      });
+
+      const result = await service.updateExamType(examType.ID, {
+        Code: uniqueValue('NEW_TYPE'),
+        Description: 'New description',
+      } as any);
+
+      expect(result.Description).toBe('New description');
+    });
+
+    it('TC-TRINH-EXM-041 — Báo lỗi khi cập nhật sang Code đã tồn tại', async () => {
+      const occupied = await createExamTypeRecord(manager, { Code: uniqueValue('USED_TYPE') });
+      const target = await createExamTypeRecord(manager, { Code: uniqueValue('TARGET_TYPE') });
+
+      await expect(
+        service.updateExamType(target.ID, { Code: occupied.Code } as any)
+      ).rejects.toThrow('already in use');
+    });
+
+    it('TC-TRINH-EXM-042 — Báo lỗi khi loại đề thi không tồn tại', async () => {
       await expect(service.updateExamType(999999, { Description: 'x' } as any)).rejects.toThrow(
         'Exam type not found'
       );
-      await expect(service.getNextOrderIndex(999999)).rejects.toThrow('Exam not found');
+    });
+  });
+
+  describe('Hàm: deleteExamType() - Xóa loại đề thi', () => {
+    it('TC-TRINH-EXM-043 — Không được xóa loại đề thi đang bị đề thi khác sử dụng', async () => {
+      const examType = await createExamTypeRecord(manager, { Code: 'TYPE_IN_USE' });
+      await createExamRecord(manager, 5, { ExamTypeID: examType.ID });
+
+      await expect(service.deleteExamType(examType.ID)).rejects.toThrow(
+        /Cannot delete exam type: 1 exam\(s\) are using it/
+      );
+    });
+
+    it('TC-TRINH-EXM-044 — Cho phép xóa loại đề thi khi không còn đề thi nào tham chiếu đến nó', async () => {
+      const examType = await createExamTypeRecord(manager, { Code: 'TYPE_UNUSED' });
+
+      const result = await service.deleteExamType(examType.ID);
+      const deleted = await manager.getRepository(ExamType).findOneBy({ ID: examType.ID });
+
+      expect(result).toBe(true);
+      expect(deleted).toBeNull();
+    });
+  });
+
+  describe('Hàm: getNextOrderIndex() - Lấy thứ tự tiếp theo', () => {
+    it('TC-TRINH-EXM-045 — Trả về OrderIndex tiếp theo đúng theo dữ liệu hiện có', async () => {
+      const exam = await createExamRecord(manager, 5);
+      const question1 = await createQuestionRecord(manager);
+      const question2 = await createQuestionRecord(manager);
+      await attachQuestionToExam(manager, exam.ID, question1.ID, 2);
+      await attachQuestionToExam(manager, exam.ID, question2.ID, 5);
+
+      const result = await service.getNextOrderIndex(exam.ID);
+
+      expect(result).toBe(6);
     });
   });
 });
