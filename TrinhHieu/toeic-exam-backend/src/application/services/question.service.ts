@@ -504,12 +504,12 @@ export class QuestionService {
       ID: question.ID,
       QuestionText: question.QuestionText || '',
       Media: {
-        Skill: question.mediaQuestion.Skill || '',
-        Type: question.mediaQuestion.Type,
-        Section: question.mediaQuestion.Section || '',
-        AudioUrl: question.mediaQuestion.AudioUrl,
-        ImageUrl: question.mediaQuestion.ImageUrl,
-        Script: question.mediaQuestion.Scirpt,
+        Skill: question.mediaQuestion?.Skill || '',
+        Type: question.mediaQuestion?.Type,
+        Section: question.mediaQuestion?.Section || '',
+        AudioUrl: question.mediaQuestion?.AudioUrl,
+        ImageUrl: question.mediaQuestion?.ImageUrl,
+        Script: question.mediaQuestion?.Scirpt,
       },
       Choices: question.choices.map((choice) => ({
         ID: choice.ID,

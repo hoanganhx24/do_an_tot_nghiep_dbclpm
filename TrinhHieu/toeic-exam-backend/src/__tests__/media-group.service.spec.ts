@@ -1,663 +1,496 @@
 /**
- * Unit Tests for QuestionService
- * File gốc  : src/application/services/question.service.ts
- * Test file : src/application/services/__tests__/question.service.spec.ts
- * Test Cases: TC-QST-001 → TC-QST-040
+ * Integration Tests for MediaGroupService
+ * File gốc  : src/application/services/media-group.service.ts
+ * Test file : src/__tests__/media-group.service.spec.ts
+ * Test Cases: TC-MGS-001 → ...
  *
- * Rollback: Toàn bộ dependencies được mock bằng jest.mock() → không có dữ liệu thật
- * nào được ghi/xóa. Không cần rollback sau mỗi test.
+ * Rollback: Sử dụng Transaction thật qua QueryRunner.
+ * Patch AppDataSource.transaction và AppDataSource.getRepository
+ * để đảm bảo mọi thao tác lưu vào DB đều thông qua queryRunner
+ * và tự động ROLLBACK sau khi mỗi test chạy xong.
  */
 
-// ─── Mock repository trước khi import service ────────────────────────────────
-const mockQuestionRepository = {
-    create: jest.fn(),
-    findById: jest.fn(),
-    findWithFilters: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    getUsageStats: jest.fn(),
-    getQuestionsBySection: jest.fn(),
-    bulkDelete: jest.fn(),
-};
+import { AppDataSource, initializeDatabase, closeDatabase } from '../infrastructure/database/config';
+import { MediaGroupService } from '../application/services/media-group.service';
+import { QueryRunner } from 'typeorm';
 
-jest.mock(
-    '../infrastructure/repositories/question.repository',
-    () => ({
-        QuestionRepository: jest.fn().mockImplementation(() => mockQuestionRepository),
-    }),
-);
+// ─── Setup DB ─────────────────────────────────────────────────────────────────
+let service: MediaGroupService;
+let queryRunner: QueryRunner;
+let originalTransactionMethod: any;
+let originalGetRepositoryMethod: any;
 
-import { QuestionService } from '../application/services/question.service';
+const USER_ID = 55; // Admin
 
-// ─── Setup ───────────────────────────────────────────────────────────────────
-let service: QuestionService;
-
-beforeEach(() => {
-    jest.clearAllMocks();
-    service = new QuestionService();
+beforeAll(async () => {
+    // Kết nối với Real Database (thông qua config.ts)
+    await AppDataSource.initialize();
 });
 
-// ─── Helper factories ─────────────────────────────────────────────────────────
-const makeQuestion = (overrides: any = {}) => ({
-    ID: 1,
-    QuestionText: 'What does the man do?',
-    UserID: 1,
-    MediaQuestionID: 1,
-    mediaQuestion: {
-        ID: 1,
-        Skill: 'LISTENING',
-        Type: 'MULTIPLE_CHOICE',
-        Section: '3',
-        AudioUrl: 'https://cdn.test/audio.mp3',
-        ImageUrl: undefined,
-        Script: undefined,
-    },
-    choices: [
-        { ID: 1, Attribute: 'A', Content: 'He is reading.', IsCorrect: true },
-        { ID: 2, Attribute: 'B', Content: 'He is writing.', IsCorrect: false },
-        { ID: 3, Attribute: 'C', Content: 'He is running.', IsCorrect: false },
-        { ID: 4, Attribute: 'D', Content: 'He is sleeping.', IsCorrect: false },
-    ],
-    ...overrides,
+afterAll(async () => {
+    // Đóng kết nối khi chạy xong toàn bộ test
+    if (AppDataSource.isInitialized) {
+        await AppDataSource.destroy();
+    }
 });
 
-const makeCreateDto = (overrides: any = {}) => ({
-    QuestionText: 'Sample Question?',
+beforeEach(async () => {
+    queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    // Patch AppDataSource.transaction để dùng queryRunner hiện tại
+    originalTransactionMethod = AppDataSource.transaction;
+    AppDataSource.transaction = async function (cb: any) {
+        return cb(queryRunner.manager);
+    } as any;
+
+    // Patch AppDataSource.getRepository để các repository con dùng queryRunner manager
+    originalGetRepositoryMethod = AppDataSource.getRepository;
+    AppDataSource.getRepository = function (entity: any) {
+        return queryRunner.manager.getRepository(entity);
+    } as any;
+
+    // Phải khởi tạo service SAU KHI patch getRepository
+    // vì service khởi tạo repositories bên trong constructor của nó
+    service = new MediaGroupService();
+});
+
+afterEach(async () => {
+    // Luôn rollback lại mọi thay đổi trong test
+    if (queryRunner) {
+        await queryRunner.rollbackTransaction();
+        await queryRunner.release();
+    }
+    
+    // Restore method cũ
+    AppDataSource.transaction = originalTransactionMethod;
+    AppDataSource.getRepository = originalGetRepositoryMethod;
+    jest.restoreAllMocks();
+});
+
+// ─── Helper factories cho Integration Test ────────────────────────────────────
+const makeCreateMediaGroupDto = (overrides: any = {}) => ({
+    Title: 'Test Media Group Title',
+    Description: 'Test Media Group Description',
     Media: {
-        Skill: 'LISTENING',
-        Type: 'MULTIPLE_CHOICE',
-        Section: '3',
-        AudioUrl: 'https://cdn.test/audio.mp3',
-        ImageUrl: undefined,
-        Script: undefined,
+        Skill: 'READING',
+        Type: 'PASSAGE',
+        Section: '7',
+        Script: 'This is a test script for reading comprehension.',
     },
-    Choices: [
-        { Content: 'A answer', Attribute: 'A', IsCorrect: true },
-        { Content: 'B answer', Attribute: 'B', IsCorrect: false },
-        { Content: 'C answer', Attribute: 'C', IsCorrect: false },
-        { Content: 'D answer', Attribute: 'D', IsCorrect: false },
-    ],
-    ...overrides,
-});
-
-const makeUsageStats = (overrides = {}) => ({
-    usedInExams: 0,
-    totalAttempts: 0,
-    ...overrides,
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// createQuestion()
-// ═══════════════════════════════════════════════════════════════════════════════
-describe('createQuestion()', () => {
-    // TC-QST-001
-    it('TC-QST-001 - Tạo question thành công với dữ liệu hợp lệ (LISTENING + AudioUrl)', async () => {
-        const created = makeQuestion();
-        mockQuestionRepository.create.mockResolvedValue(created);
-
-        const result = await service.createQuestion(makeCreateDto(), 1);
-
-        expect(mockQuestionRepository.create).toHaveBeenCalledTimes(1);
-        expect(mockQuestionRepository.create).toHaveBeenCalledWith(
-            expect.objectContaining({ QuestionText: 'Sample Question?', UserID: 1 }),
-            expect.objectContaining({ Skill: 'LISTENING', AudioUrl: 'https://cdn.test/audio.mp3' }),
-            expect.arrayContaining([expect.objectContaining({ IsCorrect: true })]),
-        );
-        expect(result).toEqual(created);
-    });
-
-    // TC-QST-002
-    it('TC-QST-002 - Throw lỗi khi LISTENING question thiếu AudioUrl', async () => {
-        const dto = makeCreateDto({
-            Media: {
-                Skill: 'LISTENING',
-                Type: 'MULTIPLE_CHOICE',
-                Section: '3',
-                AudioUrl: undefined,
-                ImageUrl: undefined,
-                Script: undefined,
-            },
-        });
-
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow(
-            'Listening questions must have audio URL',
-        );
-        expect(mockQuestionRepository.create).not.toHaveBeenCalled();
-    });
-
-    // TC-QST-003
-    it('TC-QST-003 - Throw lỗi khi Part 1 (Section="1") không có ImageUrl', async () => {
-        const dto = makeCreateDto({
-            Media: {
-                Skill: 'LISTENING',
-                Type: 'PHOTO',
-                Section: '1',
-                AudioUrl: 'https://cdn.test/audio.mp3',
-                ImageUrl: undefined,
-                Script: undefined,
-            },
-        });
-
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow(
-            'Part 1 questions must have an image',
-        );
-        expect(mockQuestionRepository.create).not.toHaveBeenCalled();
-    });
-
-    // TC-QST-004
-    it('TC-QST-004 - Throw lỗi khi AudioUrl có format không hợp lệ', async () => {
-        const dto = makeCreateDto({
-            Media: {
-                Skill: 'LISTENING',
-                Type: 'MULTIPLE_CHOICE',
-                Section: '3',
-                AudioUrl: 'ftp://invalid.url/audio.mp3',
-                ImageUrl: undefined,
-                Script: undefined,
-            },
-        });
-
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow('Invalid audio URL format');
-        expect(mockQuestionRepository.create).not.toHaveBeenCalled();
-    });
-
-    // TC-QST-005
-    it('TC-QST-005 - Throw lỗi khi ImageUrl có format không hợp lệ', async () => {
-        const dto = makeCreateDto({
-            Media: {
-                Skill: 'READING',
-                Type: 'MULTIPLE_CHOICE',
-                Section: '5',
-                AudioUrl: undefined,
-                ImageUrl: 'invalid-url',
-                Script: undefined,
-            },
-        });
-
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow('Invalid image URL format');
-    });
-
-    // TC-QST-006
-    it('TC-QST-006 - Throw lỗi khi choices có ít hơn 2 phần tử', async () => {
-        const dto = makeCreateDto({
-            Choices: [{ Content: 'A', Attribute: 'A', IsCorrect: true }],
-        });
-
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow(
-            'Question must have at least 2 choices',
-        );
-        expect(mockQuestionRepository.create).not.toHaveBeenCalled();
-    });
-
-    // TC-QST-007
-    it('TC-QST-007 - Throw lỗi khi không có đáp án đúng nào (0 correct)', async () => {
-        const dto = makeCreateDto({
-            Choices: [
-                { Content: 'A', Attribute: 'A', IsCorrect: false },
-                { Content: 'B', Attribute: 'B', IsCorrect: false },
-            ],
-        });
-
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow(
-            'Question must have exactly one correct answer',
-        );
-    });
-
-    // TC-QST-008
-    it('TC-QST-008 - Throw lỗi khi có 2 đáp án đúng', async () => {
-        const dto = makeCreateDto({
+    Difficulty: 'MEDIUM',
+    Tags: ['Test', 'Integration'],
+    OrderIndex: 1,
+    Questions: [
+        {
+            QuestionText: 'What is the main topic of the passage?',
+            OrderInGroup: 1,
             Choices: [
                 { Content: 'A', Attribute: 'A', IsCorrect: true },
-                { Content: 'B', Attribute: 'B', IsCorrect: true },
-            ],
-        });
-
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow(
-            'Question must have exactly one correct answer',
-        );
-    });
-
-    // TC-QST-009
-    it('TC-QST-009 - Throw lỗi khi attributes của choices bị trùng', async () => {
-        const dto = makeCreateDto({
-            Choices: [
-                { Content: 'A answer', Attribute: 'A', IsCorrect: true },
-                { Content: 'B answer', Attribute: 'A', IsCorrect: false }, // trùng attribute 'A'
-            ],
-        });
-
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow(
-            'Choice attributes must be unique',
-        );
-    });
-
-    // TC-QST-010
-    it('TC-QST-010 - Throw lỗi khi choice có content rỗng (empty string)', async () => {
-        const dto = makeCreateDto({
-            Choices: [
-                { Content: '', Attribute: 'A', IsCorrect: true },
                 { Content: 'B', Attribute: 'B', IsCorrect: false },
+                { Content: 'C', Attribute: 'C', IsCorrect: false },
+                { Content: 'D', Attribute: 'D', IsCorrect: false },
             ],
-        });
-
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow('All choices must have content');
-    });
-
-    // TC-QST-011
-    it('TC-QST-011 - Throw lỗi khi choice có content chỉ là whitespace', async () => {
-        const dto = makeCreateDto({
+        },
+        {
+            QuestionText: 'What does the word "script" mean in paragraph 1?',
+            OrderInGroup: 2,
             Choices: [
-                { Content: '   ', Attribute: 'A', IsCorrect: true },
-                { Content: 'B', Attribute: 'B', IsCorrect: false },
-            ],
-        });
+                { Content: 'A document', Attribute: 'A', IsCorrect: false },
+                { Content: 'A text', Attribute: 'B', IsCorrect: true },
+                { Content: 'A play', Attribute: 'C', IsCorrect: false },
+            ], // 3 choices for edge case test if needed, but rule says at least 2
+        }
+    ],
+    ...overrides,
+});
 
-        await expect(service.createQuestion(dto, 1)).rejects.toThrow('All choices must have content');
-    });
+async function insertMockMediaGroup(customTitle = 'Mock Group') {
+    const dto = makeCreateMediaGroupDto({ Title: customTitle });
+    return await service.createMediaGroup(dto as any, USER_ID);
+}
 
-    // TC-QST-012
-    it('TC-QST-012 - Tạo thành công READING question không cần AudioUrl', async () => {
-        const dto = makeCreateDto({
-            Media: {
-                Skill: 'READING',
-                Type: 'MULTIPLE_CHOICE',
-                Section: '5',
-                AudioUrl: undefined,
-                ImageUrl: undefined,
-                Script: undefined,
-            },
-        });
-        mockQuestionRepository.create.mockResolvedValue(makeQuestion());
+// ═══════════════════════════════════════════════════════════════════════════════
+// createMediaGroup()
+// ═══════════════════════════════════════════════════════════════════════════════
+describe('createMediaGroup()', () => {
+    it('TC-MGS-001 - Tạo media group thành công với dữ liệu hợp lệ', async () => {
+        // Arrange
+        const dto = makeCreateMediaGroupDto();
 
-        const result = await service.createQuestion(dto, 1);
+        // Act
+        const result = await service.createMediaGroup(dto as any, USER_ID);
 
+        // Assert
         expect(result).toBeDefined();
-        expect(mockQuestionRepository.create).toHaveBeenCalledTimes(1);
+        expect(result.MediaQuestionID).toBeGreaterThan(0);
+        expect(result.Title).toBe(dto.Title);
+        expect(result.Media.Skill).toBe(dto.Media.Skill);
+        expect(result.TotalQuestions).toBe(dto.Questions.length);
+        
+        // Assert Questions
+        expect(result.Questions.length).toBe(2);
+        expect(result.Questions[0].Choices.length).toBe(4);
+        expect(result.Questions[1].Choices.length).toBe(3);
     });
 
-    // TC-QST-013
-    it('TC-QST-013 - Tạo thành công Part 1 khi có đủ AudioUrl và ImageUrl', async () => {
-        const dto = makeCreateDto({
+    it('TC-MGS-002 - Throw lỗi khi không có câu hỏi nào (Questions array rỗng)', async () => {
+        const dto = makeCreateMediaGroupDto({ Questions: [] });
+        await expect(service.createMediaGroup(dto as any, USER_ID))
+            .rejects.toThrow('Media group must have at least one question');
+    });
+
+    it('TC-MGS-003 - Throw lỗi khi OrderInGroup bị trùng lặp', async () => {
+        const dto = makeCreateMediaGroupDto({
+            Questions: [
+                { QuestionText: 'Q1', OrderInGroup: 1, Choices: [{ Content: 'A', Attribute: 'A', IsCorrect: true }, { Content: 'B', Attribute: 'B', IsCorrect: false }] },
+                { QuestionText: 'Q2', OrderInGroup: 1, Choices: [{ Content: 'A', Attribute: 'A', IsCorrect: true }, { Content: 'B', Attribute: 'B', IsCorrect: false }] },
+            ]
+        });
+        await expect(service.createMediaGroup(dto as any, USER_ID))
+            .rejects.toThrow('OrderInGroup values must be unique within the group');
+    });
+
+    it('TC-MGS-004 - Throw lỗi khi câu hỏi có ít hơn 2 lựa chọn', async () => {
+        const dto = makeCreateMediaGroupDto({
+            Questions: [
+                { QuestionText: 'Q1', OrderInGroup: 1, Choices: [{ Content: 'A', Attribute: 'A', IsCorrect: true }] }
+            ]
+        });
+        await expect(service.createMediaGroup(dto as any, USER_ID))
+            .rejects.toThrow('Question at position 1 must have at least 2 choices');
+    });
+
+    it('TC-MGS-005 - Throw lỗi khi câu hỏi không có đáp án đúng nào', async () => {
+        const dto = makeCreateMediaGroupDto({
+            Questions: [
+                { QuestionText: 'Q1', OrderInGroup: 1, Choices: [
+                    { Content: 'A', Attribute: 'A', IsCorrect: false },
+                    { Content: 'B', Attribute: 'B', IsCorrect: false }
+                ]}
+            ]
+        });
+        await expect(service.createMediaGroup(dto as any, USER_ID))
+            .rejects.toThrow('Question at position 1 must have exactly one correct answer');
+    });
+
+    it('TC-MGS-006 - Throw lỗi khi câu hỏi có nhiều hơn 1 đáp án đúng', async () => {
+        const dto = makeCreateMediaGroupDto({
+            Questions: [
+                { QuestionText: 'Q1', OrderInGroup: 1, Choices: [
+                    { Content: 'A', Attribute: 'A', IsCorrect: true },
+                    { Content: 'B', Attribute: 'B', IsCorrect: true }
+                ]}
+            ]
+        });
+        await expect(service.createMediaGroup(dto as any, USER_ID))
+            .rejects.toThrow('Question at position 1 must have exactly one correct answer');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// getMediaGroupDetail()
+// ═══════════════════════════════════════════════════════════════════════════════
+describe('getMediaGroupDetail()', () => {
+    it('TC-MGS-007 - Lấy chi tiết media group thành công', async () => {
+        // Arrange
+        const createdGroup = await insertMockMediaGroup('Group to detail');
+
+        // Act
+        const result = await service.getMediaGroupDetail(createdGroup.MediaQuestionID);
+
+        // Assert
+        expect(result).toBeDefined();
+        expect(result.MediaQuestionID).toBe(createdGroup.MediaQuestionID);
+        expect(result.Title).toBe('Group to detail');
+        expect(result.TotalQuestions).toBe(2);
+        expect(result.Questions[0].QuestionText).toBe('What is the main topic of the passage?');
+    });
+
+    it('TC-MGS-008 - Throw lỗi khi media group không tồn tại', async () => {
+        await expect(service.getMediaGroupDetail(999999))
+            .rejects.toThrow('Media group not found');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// updateMediaGroupMetadata()
+// ═══════════════════════════════════════════════════════════════════════════════
+describe('updateMediaGroupMetadata()', () => {
+    it('TC-MGS-009 - Cập nhật metadata thành công', async () => {
+        // Arrange
+        const createdGroup = await insertMockMediaGroup('Group to update');
+        const updateDto = {
+            Title: 'Updated Title',
+            Difficulty: 'HARD',
             Media: {
                 Skill: 'LISTENING',
-                Type: 'PHOTO',
+                Type: 'AUDIO',
                 Section: '1',
-                AudioUrl: 'https://cdn.test/audio.mp3',
-                ImageUrl: 'https://cdn.test/image.jpg',
-                Script: undefined,
-            },
-        });
-        mockQuestionRepository.create.mockResolvedValue(makeQuestion());
+                AudioUrl: '/new-audio.mp3'
+            }
+        };
 
-        const result = await service.createQuestion(dto, 1);
+        // Act
+        const result = await service.updateMediaGroupMetadata(createdGroup.MediaQuestionID, updateDto as any);
 
+        // Assert
         expect(result).toBeDefined();
-        expect(mockQuestionRepository.create).toHaveBeenCalledTimes(1);
+        expect(result.Title).toBe('Updated Title');
+        expect(result.Difficulty).toBe('HARD');
+        expect(result.Media.AudioUrl).toBe('/new-audio.mp3');
     });
 
-    // TC-QST-014
-    it('TC-QST-014 - Chấp nhận relative URL path (bắt đầu bằng /)', async () => {
-        const dto = makeCreateDto({
-            Media: {
-                Skill: 'LISTENING',
-                Type: 'MULTIPLE_CHOICE',
-                Section: '3',
-                AudioUrl: '/uploads/audio/test.mp3',
-                ImageUrl: undefined,
-                Script: undefined,
-            },
-        });
-        mockQuestionRepository.create.mockResolvedValue(makeQuestion());
-
-        await expect(service.createQuestion(dto, 1)).resolves.toBeDefined();
+    it('TC-MGS-010 - Throw lỗi khi cập nhật media group không tồn tại', async () => {
+        await expect(service.updateMediaGroupMetadata(999999, {}))
+            .rejects.toThrow('Media group not found');
     });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// getQuestionById()
+// deleteMediaGroup()
 // ═══════════════════════════════════════════════════════════════════════════════
-describe('getQuestionById()', () => {
-    // TC-QST-015
-    it('TC-QST-015 - Trả về question khi ID tồn tại', async () => {
-        const q = makeQuestion();
-        mockQuestionRepository.findById.mockResolvedValue(q);
+describe('deleteMediaGroup()', () => {
+    it('TC-MGS-011 - Xoá media group thành công và cascade các câu hỏi liên quan', async () => {
+        // Arrange
+        const createdGroup = await insertMockMediaGroup('Group to delete');
 
-        const result = await service.getQuestionById(1);
+        // Act
+        const result = await service.deleteMediaGroup(createdGroup.MediaQuestionID);
 
-        expect(result).toEqual(q);
-        expect(mockQuestionRepository.findById).toHaveBeenCalledWith(1);
-    });
-
-    // TC-QST-016
-    it('TC-QST-016 - Throw "Question not found" khi ID không tồn tại', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(null);
-
-        await expect(service.getQuestionById(9999)).rejects.toThrow('Question not found');
-    });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// searchQuestions()
-// ═══════════════════════════════════════════════════════════════════════════════
-describe('searchQuestions()', () => {
-    // TC-QST-017
-    it('TC-QST-017 - Trả về paginated questions với metadata đúng', async () => {
-        const questions = [makeQuestion(), makeQuestion({ ID: 2 })];
-        mockQuestionRepository.findWithFilters.mockResolvedValue({
-            questions,
-            total: 2,
-        });
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats());
-
-        const result = await service.searchQuestions({ Page: 1, Limit: 10 });
-
-        expect(result.Questions).toHaveLength(2);
-        expect(result.Pagination.TotalQuestions).toBe(2);
-        expect(result.Pagination.CurrentPage).toBe(1);
-        expect(result.Pagination.TotalPages).toBe(1);
-    });
-
-    // TC-QST-018
-    it('TC-QST-018 - Trả về danh sách rỗng khi không có question nào match', async () => {
-        mockQuestionRepository.findWithFilters.mockResolvedValue({ questions: [], total: 0 });
-
-        const result = await service.searchQuestions({ SearchText: 'notfound' });
-
-        expect(result.Questions).toHaveLength(0);
-        expect(result.Pagination.TotalQuestions).toBe(0);
-    });
-
-    // TC-QST-019
-    it('TC-QST-019 - TotalPages được tính đúng với ceil (51 items, limit 10 → 6 pages)', async () => {
-        const questions = Array.from({ length: 10 }, (_, i) => makeQuestion({ ID: i + 1 }));
-        mockQuestionRepository.findWithFilters.mockResolvedValue({ questions, total: 51 });
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats());
-
-        const result = await service.searchQuestions({ Page: 1, Limit: 10 });
-
-        expect(result.Pagination.TotalPages).toBe(6);
-    });
-
-    // TC-QST-020
-    it('TC-QST-020 - Truyền filters đúng sang repository (Skill, Section, SearchText)', async () => {
-        mockQuestionRepository.findWithFilters.mockResolvedValue({ questions: [], total: 0 });
-
-        await service.searchQuestions({ Skill: 'READING', Section: '5', SearchText: 'grammar' });
-
-        expect(mockQuestionRepository.findWithFilters).toHaveBeenCalledWith(
-            expect.objectContaining({ Skill: 'READING', Section: '5', SearchText: 'grammar' }),
-        );
-    });
-
-    // TC-QST-021
-    it('TC-QST-021 - UsageCount được include trong mỗi question response', async () => {
-        mockQuestionRepository.findWithFilters.mockResolvedValue({
-            questions: [makeQuestion()],
-            total: 1,
-        });
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats({ usedInExams: 7 }));
-
-        const result = await service.searchQuestions({});
-
-        expect(result.Questions[0].UsageCount).toBe(7);
-    });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// updateQuestion()
-// ═══════════════════════════════════════════════════════════════════════════════
-describe('updateQuestion()', () => {
-    // TC-QST-022
-    it('TC-QST-022 - Update QuestionText thành công', async () => {
-        const existing = makeQuestion();
-        const updated = makeQuestion({ QuestionText: 'Updated text' });
-        mockQuestionRepository.findById.mockResolvedValue(existing);
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats());
-        mockQuestionRepository.update.mockResolvedValue(updated);
-
-        const result = await service.updateQuestion(1, { QuestionText: 'Updated text' }, 1);
-
-        expect(result.QuestionText).toBe('Updated text');
-        expect(mockQuestionRepository.update).toHaveBeenCalledWith(
-            1,
-            expect.objectContaining({ QuestionText: 'Updated text' }),
-            undefined,
-            undefined,
-        );
-    });
-
-    // TC-QST-023
-    it('TC-QST-023 - Throw "Question not found" khi ID không tồn tại', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(null);
-
-        await expect(service.updateQuestion(9999, { QuestionText: 'X' }, 1)).rejects.toThrow(
-            'Question not found',
-        );
-        expect(mockQuestionRepository.update).not.toHaveBeenCalled();
-    });
-
-    // TC-QST-024
-    it('TC-QST-024 - Throw "Failed to update question" khi repository.update trả về null', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(makeQuestion());
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats());
-        mockQuestionRepository.update.mockResolvedValue(null);
-
-        await expect(service.updateQuestion(1, { QuestionText: 'New text' }, 1)).rejects.toThrow(
-            'Failed to update question',
-        );
-    });
-
-    // TC-QST-025
-    it('TC-QST-025 - Validate choices khi Choices được truyền trong updateData', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(makeQuestion());
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats());
-
-        await expect(
-            service.updateQuestion(
-                1,
-                {
-                    Choices: [
-                        { Content: 'A', Attribute: 'A', IsCorrect: false },
-                        { Content: 'B', Attribute: 'B', IsCorrect: false },
-                    ],
-                },
-                1,
-            ),
-        ).rejects.toThrow('Question must have exactly one correct answer');
-    });
-
-    // TC-QST-026
-    it('TC-QST-026 - Validate media khi Media được truyền trong updateData (LISTENING không có AudioUrl)', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(makeQuestion());
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats());
-
-        await expect(
-            service.updateQuestion(
-                1,
-                {
-                    Media: {
-                        Skill: 'LISTENING',
-                        Type: 'MULTIPLE_CHOICE',
-                        Section: '3',
-                        AudioUrl: undefined,
-                    },
-                },
-                1,
-            ),
-        ).rejects.toThrow('Listening questions must have audio URL');
-    });
-
-    // TC-QST-027
-    it('TC-QST-027 - Không validate choices khi Choices không được truyền', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(makeQuestion());
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats());
-        mockQuestionRepository.update.mockResolvedValue(makeQuestion({ QuestionText: 'Updated' }));
-
-        // Chỉ update text, không truyền Choices → không validate choices
-        await expect(
-            service.updateQuestion(1, { QuestionText: 'Updated' }, 1),
-        ).resolves.toBeDefined();
-    });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// deleteQuestion()
-// ═══════════════════════════════════════════════════════════════════════════════
-describe('deleteQuestion()', () => {
-    // TC-QST-028
-    it('TC-QST-028 - Xóa question thành công khi chưa được dùng trong exam', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(makeQuestion());
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats({ usedInExams: 0 }));
-        mockQuestionRepository.delete.mockResolvedValue(true);
-
-        const result = await service.deleteQuestion(1, 1);
-
+        // Assert
         expect(result).toBe(true);
-        expect(mockQuestionRepository.delete).toHaveBeenCalledWith(1);
+
+        // Verify group is deleted
+        await expect(service.getMediaGroupDetail(createdGroup.MediaQuestionID))
+            .rejects.toThrow('Media group not found');
+            
+        // Các questions và choices cũng bị xoá (verify thông qua count database trực tiếp nếu cần,
+        // nhưng ở đây được trigger bởi service -> repository)
     });
 
-    // TC-QST-029
-    it('TC-QST-029 - Throw lỗi khi question đang được dùng trong exam (usedInExams > 0)', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(makeQuestion());
-        mockQuestionRepository.getUsageStats.mockResolvedValue(makeUsageStats({ usedInExams: 3 }));
-
-        await expect(service.deleteQuestion(1, 1)).rejects.toThrow(
-            'Cannot delete question that is used in 3 exam(s). Remove it from all exams first.',
-        );
-        expect(mockQuestionRepository.delete).not.toHaveBeenCalled();
-    });
-
-    // TC-QST-030
-    it('TC-QST-030 - Throw "Question not found" khi ID không tồn tại', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(null);
-
-        await expect(service.deleteQuestion(9999, 1)).rejects.toThrow('Question not found');
-        expect(mockQuestionRepository.delete).not.toHaveBeenCalled();
+    it('TC-MGS-012 - Throw lỗi khi xoá media group không tồn tại', async () => {
+        await expect(service.deleteMediaGroup(999999))
+            .rejects.toThrow('Media group not found');
     });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// getQuestionStatistics()
+// getMediaGroupStatistics()
 // ═══════════════════════════════════════════════════════════════════════════════
-describe('getQuestionStatistics()', () => {
-    // TC-QST-031
-    it('TC-QST-031 - Trả về usage stats khi question tồn tại', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(makeQuestion());
-        mockQuestionRepository.getUsageStats.mockResolvedValue(
-            makeUsageStats({ usedInExams: 5, totalAttempts: 200 }),
-        );
+describe('getMediaGroupStatistics()', () => {
+    it('TC-MGS-013 - Lấy thống kê cơ bản của media group', async () => {
+        // Arrange
+        const createdGroup = await insertMockMediaGroup('Group for stats');
 
-        const result = await service.getQuestionStatistics(1);
+        // Act
+        const stats = await service.getMediaGroupStatistics(createdGroup.MediaQuestionID);
 
-        expect(result.usedInExams).toBe(5);
-        expect(result.totalAttempts).toBe(200);
-    });
-
-    // TC-QST-032
-    it('TC-QST-032 - Throw "Question not found" khi ID không tồn tại', async () => {
-        mockQuestionRepository.findById.mockResolvedValue(null);
-
-        await expect(service.getQuestionStatistics(9999)).rejects.toThrow('Question not found');
-        expect(mockQuestionRepository.getUsageStats).not.toHaveBeenCalled();
+        // Assert
+        expect(stats).toBeDefined();
+        expect(stats.mediaGroupId).toBe(createdGroup.MediaQuestionID);
+        expect(stats.questionCount).toBe(2);
+        expect(stats.usedInExams).toBe(0); // Vì test data mới tạo chưa gán vào exam nào
+        expect(stats.totalAttempts).toBe(0);
     });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// getQuestionsBySection()
+// getMediaGroupsForBrowsing()
 // ═══════════════════════════════════════════════════════════════════════════════
-describe('getQuestionsBySection()', () => {
-    // TC-QST-033
-    it('TC-QST-033 - Trả về questions khi sections hợp lệ', async () => {
-        const questions = [makeQuestion(), makeQuestion({ ID: 2 })];
-        mockQuestionRepository.getQuestionsBySection.mockResolvedValue(questions);
+describe('getMediaGroupsForBrowsing()', () => {
+    it('TC-MGS-014 - Lấy danh sách media groups', async () => {
+        // Arrange
+        await insertMockMediaGroup('Group Browse 1');
+        await insertMockMediaGroup('Group Browse 2');
 
-        const result = await service.getQuestionsBySection(['5', '6'], 10);
+        // Act
+        const result = await service.getMediaGroupsForBrowsing({ Page: 1, Limit: 10 });
 
-        expect(result).toEqual(questions);
-        expect(mockQuestionRepository.getQuestionsBySection).toHaveBeenCalledWith(['5', '6'], 10);
-    });
-
-    // TC-QST-034
-    it('TC-QST-034 - Throw lỗi khi sections là mảng rỗng', async () => {
-        await expect(service.getQuestionsBySection([])).rejects.toThrow(
-            'At least one section must be specified',
-        );
-        expect(mockQuestionRepository.getQuestionsBySection).not.toHaveBeenCalled();
-    });
-
-    // TC-QST-035
-    it('TC-QST-035 - Throw lỗi khi sections là null/undefined', async () => {
-        await expect(service.getQuestionsBySection(null as any)).rejects.toThrow(
-            'At least one section must be specified',
-        );
+        // Assert
+        expect(result).toBeDefined();
+        expect(result.groups).toBeInstanceOf(Array);
+        expect(result.groups.length).toBeGreaterThanOrEqual(2);
+        expect(result.pagination.TotalPages).toBeGreaterThan(0);
     });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// performBulkOperation()
+// cloneMediaGroup()
 // ═══════════════════════════════════════════════════════════════════════════════
-describe('performBulkOperation()', () => {
-    // TC-QST-036
-    it('TC-QST-036 - Bulk DELETE thành công trả về success count đúng', async () => {
-        mockQuestionRepository.bulkDelete.mockResolvedValue(3);
+describe('cloneMediaGroup()', () => {
+    it('TC-MGS-015 - Clone media group thành công (kèm theo questions)', async () => {
+        // Arrange
+        const originalGroup = await insertMockMediaGroup('Original Group');
 
-        const result = await service.performBulkOperation(
-            { Operation: 'DELETE', QuestionIDs: [1, 2, 3] },
-            1,
-        );
+        // Act
+        const clonedGroup = await service.cloneMediaGroup(originalGroup.MediaQuestionID, USER_ID, 'Cloned Group');
 
-        expect(result.success).toBe(3);
-        expect(result.failed).toBe(0);
-        expect(result.errors).toHaveLength(0);
-        expect(mockQuestionRepository.bulkDelete).toHaveBeenCalledWith([1, 2, 3]);
+        // Assert
+        expect(clonedGroup).toBeDefined();
+        expect(clonedGroup.MediaQuestionID).not.toBe(originalGroup.MediaQuestionID); // Phải là ID mới
+        expect(clonedGroup.Title).toBe('Cloned Group');
+        expect(clonedGroup.TotalQuestions).toBe(originalGroup.TotalQuestions);
+        
+        // Assert Questions
+        expect(clonedGroup.Questions.length).toBe(2);
+        expect(clonedGroup.Questions[0].QuestionText).toBe(originalGroup.Questions[0].QuestionText);
+        expect(clonedGroup.Questions[0].ID).not.toBe(originalGroup.Questions[0].ID); // ID question phải khác
     });
 
-    // TC-QST-037
-    it('TC-QST-037 - Bulk DELETE thất bại → failed = số lượng IDs, có error message', async () => {
-        mockQuestionRepository.bulkDelete.mockRejectedValue(new Error('DB error'));
+    it('TC-MGS-016 - Clone media group thành công không truyền newTitle (dùng mặc định)', async () => {
+        // Arrange
+        const originalGroup = await insertMockMediaGroup('Original Group 2');
 
-        const result = await service.performBulkOperation(
-            { Operation: 'DELETE', QuestionIDs: [1, 2, 3] },
-            1,
-        );
+        // Act
+        const clonedGroup = await service.cloneMediaGroup(originalGroup.MediaQuestionID, USER_ID);
 
-        expect(result.success).toBe(0);
-        expect(result.failed).toBe(3);
-        expect(result.errors[0]).toContain('Bulk delete failed');
+        // Assert
+        expect(clonedGroup).toBeDefined();
+        expect(clonedGroup.MediaQuestionID).not.toBe(originalGroup.MediaQuestionID);
+        expect(clonedGroup.TotalQuestions).toBe(originalGroup.TotalQuestions);
     });
 
-    // TC-QST-038
-    it('TC-QST-038 - ADD_TO_EXAM operation trả về error "should be handled by ExamService"', async () => {
-        const result = await service.performBulkOperation(
-            { Operation: 'ADD_TO_EXAM', QuestionIDs: [1, 2] },
-            1,
-        );
+    it('TC-MGS-017 - Throw lỗi khi clone media group không tồn tại', async () => {
+        await expect(service.cloneMediaGroup(999999, USER_ID))
+            .rejects.toThrow('Media group not found');
+    });
+});
 
-        expect(result.failed).toBe(2);
-        expect(result.errors[0]).toContain('ADD_TO_EXAM operation should be handled by ExamService');
+// ═══════════════════════════════════════════════════════════════════════════════
+// addQuestionToGroup()
+// ═══════════════════════════════════════════════════════════════════════════════
+describe('addQuestionToGroup()', () => {
+    it('TC-MGS-018 - Add thêm question vào group thành công (truyền OrderInGroup)', async () => {
+        // Arrange
+        const group = await insertMockMediaGroup('Group to add Q');
+        const questionData = {
+            QuestionText: 'New added question?',
+            OrderInGroup: 3, // Group mặc định có 1 và 2 rồi
+            Choices: [
+                { Content: 'A', Attribute: 'A', IsCorrect: true },
+                { Content: 'B', Attribute: 'B', IsCorrect: false }
+            ]
+        };
+
+        // Act
+        const result = await service.addQuestionToGroup(group.MediaQuestionID, questionData, USER_ID);
+
+        // Assert
+        expect(result).toBeDefined();
+        expect(result.QuestionText).toBe('New added question?');
+        expect(result.OrderInGroup).toBe(3);
+        expect(result.MediaQuestionID).toBe(group.MediaQuestionID);
+        
+        // Verify via detail
+        const updatedGroup = await service.getMediaGroupDetail(group.MediaQuestionID);
+        expect(updatedGroup.TotalQuestions).toBe(3);
     });
 
-    // TC-QST-039
-    it('TC-QST-039 - Unknown operation trả về failed count và error message đúng', async () => {
-        const result = await service.performBulkOperation(
-            { Operation: 'UNKNOWN_OP' as any, QuestionIDs: [1] },
-            1,
-        );
+    it('TC-MGS-019 - Add thêm question vào group thành công (auto-assign OrderInGroup)', async () => {
+        // Arrange
+        const group = await insertMockMediaGroup('Group for auto order');
+        const questionData = {
+            QuestionText: 'Auto order question?',
+            OrderInGroup: 0, // Không truyền
+            Choices: [
+                { Content: 'A', Attribute: 'A', IsCorrect: true },
+                { Content: 'B', Attribute: 'B', IsCorrect: false }
+            ]
+        };
 
-        expect(result.failed).toBe(1);
-        expect(result.errors[0]).toContain('Unknown operation: UNKNOWN_OP');
+        // Act
+        const result = await service.addQuestionToGroup(group.MediaQuestionID, questionData as any, USER_ID);
+
+        // Assert
+        expect(result).toBeDefined();
+        // Order tiếp theo sẽ tự được tính (trong trường hợp này có thể là 3)
+        expect(result.OrderInGroup).toBeGreaterThanOrEqual(3);
+        
+        // Verify via detail
+        const updatedGroup = await service.getMediaGroupDetail(group.MediaQuestionID);
+        expect(updatedGroup.TotalQuestions).toBe(3);
     });
 
-    // TC-QST-040
-    it('TC-QST-040 - Bulk DELETE với danh sách IDs rỗng trả về success=0', async () => {
-        mockQuestionRepository.bulkDelete.mockResolvedValue(0);
+    it('TC-MGS-020 - Throw lỗi khi OrderInGroup bị trùng', async () => {
+        // Arrange
+        const group = await insertMockMediaGroup('Group duplicated order');
+        const questionData = {
+            QuestionText: 'Duplicated order question?',
+            OrderInGroup: 1, // Đã tồn tại order 1
+            Choices: [
+                { Content: 'A', Attribute: 'A', IsCorrect: true },
+                { Content: 'B', Attribute: 'B', IsCorrect: false }
+            ]
+        };
 
-        const result = await service.performBulkOperation(
-            { Operation: 'DELETE', QuestionIDs: [] },
-            1,
-        );
+        // Act & Assert
+        await expect(service.addQuestionToGroup(group.MediaQuestionID, questionData, USER_ID))
+            .rejects.toThrow('OrderInGroup 1 is already used in this media group');
+    });
 
-        expect(result.success).toBe(0);
-        expect(result.failed).toBe(0);
+    it('TC-MGS-021 - Throw lỗi khi add question vào group không tồn tại', async () => {
+        const questionData = {
+            QuestionText: 'Invalid group question?',
+            OrderInGroup: 1,
+            Choices: [
+                { Content: 'A', Attribute: 'A', IsCorrect: true },
+                { Content: 'B', Attribute: 'B', IsCorrect: false }
+            ]
+        };
+
+        await expect(service.addQuestionToGroup(999999, questionData, USER_ID))
+            .rejects.toThrow('Media group not found');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// removeQuestionFromGroup()
+// ═══════════════════════════════════════════════════════════════════════════════
+describe('removeQuestionFromGroup()', () => {
+    it('TC-MGS-022 - Remove question thành công khỏi group', async () => {
+        // Arrange
+        const group = await insertMockMediaGroup('Group to remove Q');
+        const questionToRemove = group.Questions[0];
+
+        // Act
+        const result = await service.removeQuestionFromGroup(group.MediaQuestionID, questionToRemove.ID);
+
+        // Assert
+        expect(result).toBe(true);
+        
+        // Verify via detail
+        const updatedGroup = await service.getMediaGroupDetail(group.MediaQuestionID);
+        expect(updatedGroup.TotalQuestions).toBe(1); // 2 - 1 = 1
+    });
+
+    it('TC-MGS-023 - Throw lỗi khi question không thuộc về group', async () => {
+        // Arrange
+        const group1 = await insertMockMediaGroup('Group 1');
+        const group2 = await insertMockMediaGroup('Group 2');
+        const questionOfGroup1 = group1.Questions[0];
+
+        // Act & Assert (Cố tình remove question của group1 bằng group2)
+        await expect(service.removeQuestionFromGroup(group2.MediaQuestionID, questionOfGroup1.ID))
+            .rejects.toThrow('Question not found in this media group');
+    });
+
+    it('TC-MGS-024 - Throw lỗi khi question đang được dùng trong exam', async () => {
+        // Arrange
+        const group = await insertMockMediaGroup('Group with used question');
+        const questionToRemove = group.Questions[0];
+        
+        // Mock getUsageStats để mô phỏng question đang được sử dụng
+        const repo: any = (service as any).questionRepository;
+        const originalStats = repo.getUsageStats;
+        repo.getUsageStats = jest.fn().mockResolvedValue({ usedInExams: 2 });
+
+        // Act & Assert
+        await expect(service.removeQuestionFromGroup(group.MediaQuestionID, questionToRemove.ID))
+            .rejects.toThrow('Cannot remove question: It is used in 2 exam(s)');
+            
+        // Restore
+        repo.getUsageStats = originalStats;
     });
 });

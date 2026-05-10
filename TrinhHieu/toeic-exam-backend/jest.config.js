@@ -7,4 +7,5 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'json'],
   transform: { '^.+\\.ts$': 'ts-jest' },
   clearMocks: true,
+  testTimeout: 30000,
 };
