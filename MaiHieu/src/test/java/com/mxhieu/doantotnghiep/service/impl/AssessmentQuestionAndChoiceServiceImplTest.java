@@ -2,185 +2,259 @@ package com.mxhieu.doantotnghiep.service.impl;
 
 import com.mxhieu.doantotnghiep.dto.request.AssessmentOptionRequest;
 import com.mxhieu.doantotnghiep.dto.request.AssessmentQuestionRequest;
-import com.mxhieu.doantotnghiep.entity.AssessmentEntity;
-import com.mxhieu.doantotnghiep.entity.AssessmentOptionEntity;
-import com.mxhieu.doantotnghiep.entity.AssessmentQuestionEntity;
-import com.mxhieu.doantotnghiep.entity.ExerciseTypeEntity;
+import com.mxhieu.doantotnghiep.entity.*;
 import com.mxhieu.doantotnghiep.exception.AppException;
 import com.mxhieu.doantotnghiep.exception.ErrorCode;
+import com.mxhieu.doantotnghiep.repository.AssessmentOptionRepository;
 import com.mxhieu.doantotnghiep.repository.AssessmentQuestionRepository;
 import com.mxhieu.doantotnghiep.repository.AssessmentRepository;
+import com.mxhieu.doantotnghiep.repository.ExerciseTypeRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
+/**
+ * Test cho AssessmentQuestionAndChoiceServiceImpl sử dụng MySQL thực tế (Dump).
+ *
+ * Quản lý Câu hỏi và Lựa chọn (AssessmentQuestion và AssessmentOption).
+ * Theo docs:
+ * - Bảng 2.19: AssessmentQuestion gắn với Assessment.
+ * - Bảng 2.20: AssessmentOption gắn với AssessmentQuestion.
+ * UC 2.3.4: Quản trị viên thêm/sửa/xóa câu hỏi cho bài tập.
+ *
+ * Liên kết System Test:
+ * - QLBTKH-VD-10: Kiểm tra tính duy nhất của đáp án (Duplicate Options).
+ * - QLBTKH-VD-12: Kiểm tra tính hợp lệ của ô tích đáp án đúng.
+ * - QLBTKH-FU-16 -> QLBTKH-FU-24: Thêm câu hỏi cho từng loại bài tập (MC, TF, Listening...).
+ * - QLBTKH-FU-25 -> QLBTKH-FU-33: Sửa câu hỏi cho từng loại bài tập.
+ * - QLBTKH-FU-35: Xóa câu hỏi thành công.
+ *
+ * Cấu trúc test: DATA -> ACTION -> CHECK DB -> ROLLBACK
+ * Method tested: createQuestionAndChoices, updateQuestionndChoices, deleteAssessmentQuestionById.
+ */
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
 class AssessmentQuestionAndChoiceServiceImplTest {
 
-    @Mock
-    private AssessmentRepository assessmentRepository;
-
-    @Mock
-    private AssessmentQuestionRepository assessmentQuestionRepository;
-
-    @InjectMocks
+    @Autowired
     private AssessmentQuestionAndChoiceServiceImpl service;
 
-    @Test
-    void createQuestionAndChoices_shouldThrowWhenAssessmentNotFound() {
-        // Test Case ID: MAI-AQC-001
-        AssessmentQuestionRequest request = AssessmentQuestionRequest.builder().assessmentId(100).build();
-        when(assessmentRepository.findById(100)).thenReturn(Optional.empty());
+    @Autowired
+    private AssessmentRepository assessmentRepository;
 
-        AppException ex = assertThrows(AppException.class, () -> service.createQuestionAndChoices(request, null));
+    @Autowired
+    private AssessmentQuestionRepository assessmentQuestionRepository;
 
-        assertEquals(ErrorCode.ASSESSMENT_NOT_FOUND, ex.getErrorCode());
+    @Autowired
+    private ExerciseTypeRepository exerciseTypeRepository;
+
+    @Autowired
+    private AssessmentOptionRepository assessmentOptionRepository;
+
+    private AssessmentEntity assessmentMC;
+    private AssessmentEntity assessmentTF;
+    private AssessmentEntity assessmentList;
+    private AssessmentEntity assessmentBlank;
+
+    @BeforeEach
+    void setUp() {
+        // Lấy ExerciseType từ dump
+        ExerciseTypeEntity mcType = exerciseTypeRepository.findByCode("MULTIPLE_CHOICE").orElseThrow();
+        ExerciseTypeEntity tfType = exerciseTypeRepository.findByCode("TRUE_FALSE").orElseThrow();
+        ExerciseTypeEntity listType = exerciseTypeRepository.findByCode("LISTENING_1").orElseThrow();
+        ExerciseTypeEntity blankType = exerciseTypeRepository.findByCode("FILL_IN_THE_BLANK").orElseThrow();
+
+        // Tạo Assessment mới phục vụ test (sẽ được rollback)
+        assessmentMC = assessmentRepository.save(AssessmentEntity.builder().title("Test MC").exercisetype(mcType).build());
+        assessmentTF = assessmentRepository.save(AssessmentEntity.builder().title("Test TF").exercisetype(tfType).build());
+        assessmentList = assessmentRepository.save(AssessmentEntity.builder().title("Test List").exercisetype(listType).build());
+        assessmentBlank = assessmentRepository.save(AssessmentEntity.builder().title("Test Blank").exercisetype(blankType).build());
     }
 
-    @Test
-    void createQuestionAndChoices_shouldCreateTrueFalseOptions() {
-        // Test Case ID: MAI-AQC-002
-        AssessmentEntity assessment = AssessmentEntity.builder()
-                .id(1)
-                .exercisetype(ExerciseTypeEntity.builder().code("TRUE_FALSE").build())
-                .build();
-        AssessmentQuestionRequest request = AssessmentQuestionRequest.builder()
-                .assessmentId(1)
-                .question("Question")
-                .explain("Explain")
-                .answer("True")
-                .build();
+    // Lấy câu hỏi vừa tạo dựa trên Assessment ID
+    private AssessmentQuestionEntity getLatestQuestion(Integer assessmentId) {
+        return assessmentQuestionRepository.findAll().stream()
+                .filter(q -> q.getAssessment().getId().equals(assessmentId))
+                .findFirst()
+                .orElse(null);
+    }
 
-        when(assessmentRepository.findById(1)).thenReturn(Optional.of(assessment));
+    // ==================== MAI-AQC-001 ====================
+    @Test
+    @DisplayName("MAI-AQC-001: Tạo câu hỏi MULTIPLE_CHOICE hợp lệ (QLBTKH-FU-17)")
+    void createQuestionAndChoices_MultipleChoice_Success() {
+        // 1. DATA
+        AssessmentQuestionRequest request = new AssessmentQuestionRequest();
+        request.setAssessmentId(assessmentMC.getId());
+        request.setQuestion("Hệ quản trị CSDL nào được dùng trong đồ án?");
+        request.setOptions(List.of("MySQL", "PostgreSQL", "MongoDB", "Oracle"));
+        request.setAnswer("MySQL");
+
+        // 2. ACTION
+        service.createQuestionAndChoices(request, null);
+
+        // 3. CHECK DB
+        AssessmentQuestionEntity saved = getLatestQuestion(assessmentMC.getId());
+        assertNotNull(saved);
+        assertEquals(4, saved.getAssessmentOptions().size());
+        assertTrue(saved.getAssessmentOptions().stream().anyMatch(o -> o.getContent().equals("MySQL") && o.getIsCorrect()));
+    }
+
+    // ==================== MAI-AQC-002 ====================
+    @Test
+    @DisplayName("MAI-AQC-002: Tạo câu hỏi TRUE_FALSE - tự động sinh option (QLBTKH-FU-16)")
+    void createQuestionAndChoices_TrueFalse_Success() {
+        AssessmentQuestionRequest request = new AssessmentQuestionRequest();
+        request.setAssessmentId(assessmentTF.getId());
+        request.setQuestion("Java là ngôn ngữ hướng đối tượng?");
+        request.setAnswer("True");
 
         service.createQuestionAndChoices(request, null);
 
-        ArgumentCaptor<AssessmentQuestionEntity> captor = ArgumentCaptor.forClass(AssessmentQuestionEntity.class);
-        verify(assessmentQuestionRepository).save(captor.capture());
-        List<AssessmentOptionEntity> options = captor.getValue().getAssessmentOptions();
-
-        assertEquals(2, options.size());
-        assertTrue(options.stream().anyMatch(o -> "True".equals(o.getContent()) && Boolean.TRUE.equals(o.getIsCorrect())));
-        assertTrue(options.stream().anyMatch(o -> "False".equals(o.getContent()) && Boolean.FALSE.equals(o.getIsCorrect())));
+        AssessmentQuestionEntity saved = getLatestQuestion(assessmentTF.getId());
+        assertNotNull(saved);
+        assertEquals(2, saved.getAssessmentOptions().size());
+        assertTrue(saved.getAssessmentOptions().stream().anyMatch(o -> o.getContent().equals("True") && o.getIsCorrect()));
     }
 
+    // ==================== MAI-AQC-003 ====================
     @Test
-    void createQuestionAndChoices_shouldCreateFillInBlankOptionsAsCorrect() {
-        // Test Case ID: MAI-AQC-003
-        AssessmentEntity assessment = AssessmentEntity.builder()
-                .id(2)
-                .exercisetype(ExerciseTypeEntity.builder().code("FILL_IN_THE_BLANK").build())
-                .build();
-        AssessmentQuestionRequest request = AssessmentQuestionRequest.builder()
-                .assessmentId(2)
-                .question("Question")
-                .answer(List.of("A", "B"))
-                .build();
-
-        when(assessmentRepository.findById(2)).thenReturn(Optional.of(assessment));
+    @DisplayName("MAI-AQC-003: Kiểm tra trim space (System Test QLBTKH-VD-02)")
+    void createQuestionAndChoices_ShouldTrimSpace() {
+        AssessmentQuestionRequest request = new AssessmentQuestionRequest();
+        request.setAssessmentId(assessmentMC.getId());
+        request.setQuestion("   Question   "); 
+        request.setOptions(List.of(" A ", " B "));
+        request.setAnswer(" A ");
 
         service.createQuestionAndChoices(request, null);
 
-        ArgumentCaptor<AssessmentQuestionEntity> captor = ArgumentCaptor.forClass(AssessmentQuestionEntity.class);
-        verify(assessmentQuestionRepository).save(captor.capture());
-
-        assertEquals(2, captor.getValue().getAssessmentOptions().size());
-        assertTrue(captor.getValue().getAssessmentOptions().stream().allMatch(o -> Boolean.TRUE.equals(o.getIsCorrect())));
+        AssessmentQuestionEntity saved = getLatestQuestion(assessmentMC.getId());
+        assertNotNull(saved);
+        assertEquals("Question", saved.getStem(), "Lỗi: Nội dung câu hỏi chưa được trim space");
+        assertEquals("A", saved.getAssessmentOptions().get(0).getContent(), "Lỗi: Đáp án chưa được trim space");
     }
 
+    // ==================== MAI-AQC-004 ====================
     @Test
-    void createQuestionAndChoices_shouldThrowRuntimeWhenListeningFileCannotRead() throws IOException {
-        // Test Case ID: MAI-AQC-004
-        AssessmentEntity assessment = AssessmentEntity.builder()
-                .id(3)
-                .exercisetype(ExerciseTypeEntity.builder().code("LISTENING_1").build())
-                .build();
-        AssessmentQuestionRequest request = AssessmentQuestionRequest.builder()
-                .assessmentId(3)
-                .answer("A")
-                .options(List.of("A", "B"))
-                .build();
-        MultipartFile file = mock(MultipartFile.class);
+    @DisplayName("MAI-AQC-004: Tạo câu hỏi LISTENING_1 với file tranh (QLBTKH-FU-19)")
+    void createQuestionAndChoices_Listening_WithFile() throws Exception {
+        AssessmentQuestionRequest request = new AssessmentQuestionRequest();
+        request.setAssessmentId(assessmentList.getId());
+        request.setQuestion("Look at the picture");
+        request.setOptions(List.of("A", "B", "C", "D"));
+        request.setAnswer("A");
+        
+        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", "image/jpeg", "image content".getBytes());
 
-        when(assessmentRepository.findById(3)).thenReturn(Optional.of(assessment));
-        when(file.getBytes()).thenThrow(new IOException("cannot read file"));
+        service.createQuestionAndChoices(request, file);
 
-        assertThrows(RuntimeException.class, () -> service.createQuestionAndChoices(request, file));
+        AssessmentQuestionEntity saved = getLatestQuestion(assessmentList.getId());
+        assertNotNull(saved);
+        assertArrayEquals("image content".getBytes(), saved.getMediData());
     }
 
+    // ==================== MAI-AQC-005 ====================
     @Test
-    void updateQuestionndChoices_shouldThrowWhenQuestionNotFound() {
-        // Test Case ID: MAI-AQC-005
-        AssessmentQuestionRequest request = AssessmentQuestionRequest.builder().id(200).build();
-        when(assessmentQuestionRepository.findById(200)).thenReturn(Optional.empty());
+    @DisplayName("MAI-AQC-005: Cập nhật câu hỏi và thay đổi options (QLBTKH-FU-26)")
+    void updateQuestionAndChoices_Success() {
+        AssessmentQuestionEntity q = assessmentQuestionRepository.save(AssessmentQuestionEntity.builder()
+                .assessment(assessmentMC).stem("Old Q").assessmentOptions(new ArrayList<>()).build());
+        AssessmentOptionEntity o1 = assessmentOptionRepository.save(AssessmentOptionEntity.builder()
+                .assessmentQuestion(q).content("Old A").isCorrect(true).build());
+        q.getAssessmentOptions().add(o1);
 
-        AppException ex = assertThrows(AppException.class, () -> service.updateQuestionndChoices(request, null));
+        AssessmentOptionRequest optReq = new AssessmentOptionRequest();
+        optReq.setId(o1.getId());
+        optReq.setContent("New A");
 
-        assertEquals(ErrorCode.ASSESSMENT_QUESSTION_NOT_FOUND, ex.getErrorCode());
-    }
-
-    @Test
-    void updateQuestionndChoices_shouldUpdateExistingOptionAndAppendNewOption() {
-        // Test Case ID: MAI-AQC-006
-        AssessmentOptionEntity existingOption = AssessmentOptionEntity.builder()
-                .id(1)
-                .content("A")
-                .isCorrect(false)
-                .build();
-        AssessmentEntity assessment = AssessmentEntity.builder()
-                .id(4)
-                .exercisetype(ExerciseTypeEntity.builder().code("SINGLE_CHOICE").build())
-                .build();
-        AssessmentQuestionEntity question = AssessmentQuestionEntity.builder()
-                .id(10)
-                .assessment(assessment)
-                .assessmentOptions(new ArrayList<>(List.of(existingOption)))
-                .build();
-
-        AssessmentOptionRequest updated = AssessmentOptionRequest.builder().id(1).content("A1").build();
-        AssessmentOptionRequest added = AssessmentOptionRequest.builder().content("B").build();
-        AssessmentQuestionRequest request = AssessmentQuestionRequest.builder()
-                .id(10)
-                .question("New question")
-                .choices(List.of(updated, added))
-                .answer("B")
-                .build();
-
-        when(assessmentQuestionRepository.findById(10)).thenReturn(Optional.of(question));
+        AssessmentQuestionRequest request = new AssessmentQuestionRequest();
+        request.setId(q.getId());
+        request.setQuestion("New Q");
+        request.setChoices(List.of(optReq));
+        request.setAnswer("New A");
 
         service.updateQuestionndChoices(request, null);
 
-        ArgumentCaptor<AssessmentQuestionEntity> captor = ArgumentCaptor.forClass(AssessmentQuestionEntity.class);
-        verify(assessmentQuestionRepository).save(captor.capture());
-
-        List<AssessmentOptionEntity> options = captor.getValue().getAssessmentOptions();
-        assertEquals(2, options.size());
-        assertTrue(options.stream().anyMatch(o -> "A1".equals(o.getContent()) && Boolean.FALSE.equals(o.getIsCorrect())));
-        assertTrue(options.stream().anyMatch(o -> "B".equals(o.getContent()) && Boolean.TRUE.equals(o.getIsCorrect())));
+        AssessmentQuestionEntity updated = assessmentQuestionRepository.findById(q.getId()).orElseThrow();
+        assertEquals("New Q", updated.getStem());
+        assertEquals("New A", updated.getAssessmentOptions().get(0).getContent());
     }
 
+    // ==================== MAI-AQC-006 ====================
     @Test
-    void deleteAssessmentQuestionById_shouldDelegateToRepository() {
-        // Test Case ID: MAI-AQC-007
-        service.deleteAssessmentQuestionById(500);
+    @DisplayName("MAI-AQC-006: Xóa câu hỏi (QLBTKH-FU-35)")
+    void deleteQuestion_Success() {
+        AssessmentQuestionEntity q = assessmentQuestionRepository.save(AssessmentQuestionEntity.builder()
+                .assessment(assessmentMC).stem("Delete me").build());
+        Integer id = q.getId();
 
-        verify(assessmentQuestionRepository).deleteById(500);
+        service.deleteAssessmentQuestionById(id);
+
+        assertFalse(assessmentQuestionRepository.existsById(id));
+    }
+
+    // ==================== MAI-AQC-007 ====================
+    @Test
+    @DisplayName("MAI-AQC-007: Kiểm tra tính duy nhất của đáp án (QLBTKH-VD-10)")
+    void createQuestionAndChoices_DuplicateOptions_ShouldFail() {
+        AssessmentQuestionRequest request = new AssessmentQuestionRequest();
+        request.setAssessmentId(assessmentMC.getId());
+        request.setQuestion("Duplicate test");
+        request.setOptions(List.of("MySQL", "MySQL")); 
+        request.setAnswer("MySQL");
+
+        assertThrows(AppException.class, () -> service.createQuestionAndChoices(request, null),
+                "Lỗi: Hệ thống chưa chặn đáp án trùng lặp (phải ném AppException)");
+    }
+
+    // ==================== MAI-AQC-008 ====================
+    @Test
+    @DisplayName("MAI-AQC-008: Tạo câu hỏi FILL_IN_THE_BLANK")
+    void createQuestionAndChoices_FillInTheBlank_Success() {
+        AssessmentQuestionRequest request = new AssessmentQuestionRequest();
+        request.setAssessmentId(assessmentBlank.getId());
+        request.setQuestion("___ is a programming language.");
+        request.setAnswer(List.of("Java", "C++")); // Nhiều đáp án đúng cho điền từ
+
+        service.createQuestionAndChoices(request, null);
+
+        AssessmentQuestionEntity saved = getLatestQuestion(assessmentBlank.getId());
+        assertNotNull(saved);
+        assertEquals(2, saved.getAssessmentOptions().size());
+        assertTrue(saved.getAssessmentOptions().stream().allMatch(o -> o.getIsCorrect()));
+    }
+
+    // ==================== MAI-AQC-009 ====================
+    @Test
+    @DisplayName("MAI-AQC-009: Cập nhật câu hỏi và thêm option mới")
+    void updateQuestionAndChoices_AddNewOption_Success() {
+        AssessmentQuestionEntity q = assessmentQuestionRepository.save(AssessmentQuestionEntity.builder()
+                .assessment(assessmentMC).stem("Update Q").assessmentOptions(new ArrayList<>()).build());
+        
+        AssessmentOptionRequest newOpt = new AssessmentOptionRequest();
+        newOpt.setContent("Brand New Option");
+
+        AssessmentQuestionRequest request = new AssessmentQuestionRequest();
+        request.setId(q.getId());
+        request.setChoices(List.of(newOpt));
+        request.setAnswer("Brand New Option");
+
+        service.updateQuestionndChoices(request, null);
+
+        AssessmentQuestionEntity updated = assessmentQuestionRepository.findById(q.getId()).orElseThrow();
+        assertEquals(1, updated.getAssessmentOptions().size());
+        assertEquals("Brand New Option", updated.getAssessmentOptions().get(0).getContent());
     }
 }

@@ -1,74 +1,84 @@
 package com.mxhieu.doantotnghiep.service.impl;
 
-import com.mxhieu.doantotnghiep.converter.ExerciseTypeConverter;
 import com.mxhieu.doantotnghiep.dto.response.ExerciseTypeResponse;
 import com.mxhieu.doantotnghiep.entity.ExerciseTypeEntity;
 import com.mxhieu.doantotnghiep.repository.ExerciseTypeRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
+/**
+ * Test cho ExerciseTypeServiceImpl sử dụng MySQL.
+ *
+ * Nghiệp vụ (Docs đồ án):
+ * - Cung cấp danh mục các loại bài tập để giáo viên lựa chọn khi tạo bài mới.
+ * - Các loại phổ biến: MULTIPLE_CHOICE, TRUE_FALSE, INTERACTIVE, PART_1...7.
+ *
+ * Liên kết System Test:
+ * - QLBTKH-VD-04: Kiểm tra danh sách thể loại bài tập hiển thị cho giáo viên.
+ *
+ * Cấu trúc kiểm thử: DATA -> ACTION -> CHECK DB -> ROLLBACK.
+ */
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
 class ExerciseTypeServiceImplTest {
 
-    @Mock
-    private ExerciseTypeRepository exerciseTypeRepository;
-
-    @Mock
-    private ExerciseTypeConverter exerciseTypeConverter;
-
-    @InjectMocks
+    @Autowired
     private ExerciseTypeServiceImpl exerciseTypeService;
 
-    @Test
-    void getExerciseTypes_shouldReturnMappedResponses() {
-        // Test Case ID: MAI-ETS-001
-        List<ExerciseTypeEntity> entities = List.of(ExerciseTypeEntity.builder().id(1).code("READING_5").build());
-        List<ExerciseTypeResponse> responses = List.of(ExerciseTypeResponse.builder().id(1).code("READING_5").build());
+    @Autowired
+    private ExerciseTypeRepository exerciseTypeRepository;
 
-        when(exerciseTypeRepository.findAll()).thenReturn(entities);
-        when(exerciseTypeConverter.toResponseList(entities, ExerciseTypeResponse.class)).thenReturn(responses);
-
-        List<ExerciseTypeResponse> actual = exerciseTypeService.getExerciseTypes();
-
-        assertSame(responses, actual);
-        verify(exerciseTypeRepository).findAll();
+    /**
+     * Helper tạo dữ liệu mẫu cho các loại bài tập với Code duy nhất để tránh xung đột dữ liệu thật.
+     */
+    private void setupExerciseTypes() {
+        if (exerciseTypeRepository.findByCode("TEST_MULTIPLE_CHOICE").isEmpty()) {
+            exerciseTypeRepository.save(ExerciseTypeEntity.builder().code("TEST_MULTIPLE_CHOICE").description("Chọn đáp án").build());
+        }
+        if (exerciseTypeRepository.findByCode("TEST_INTERACTIVE").isEmpty()) {
+            exerciseTypeRepository.save(ExerciseTypeEntity.builder().code("TEST_INTERACTIVE").description("Tương tác").build());
+        }
     }
 
+    // ==================== MAI-EXT-001 ====================
     @Test
-    void getExerciseTypes_shouldPassRepositoryResultToConverter() {
-        // Test Case ID: MAI-ETS-002
-        List<ExerciseTypeEntity> entities = List.of(ExerciseTypeEntity.builder().id(11).code("TRUE_FALSE").build());
+    @DisplayName("MAI-EXT-001: getExerciseTypes - Lấy danh sách thành công")
+    void getExerciseTypes_WithData_ShouldReturnList() {
+        // === DATA ===
+        setupExerciseTypes();
 
-        when(exerciseTypeRepository.findAll()).thenReturn(entities);
-        when(exerciseTypeConverter.toResponseList(anyList(), eq(ExerciseTypeResponse.class))).thenReturn(Collections.emptyList());
+        // === ACTION ===
+        List<ExerciseTypeResponse> result = exerciseTypeService.getExerciseTypes();
 
-        exerciseTypeService.getExerciseTypes();
-
-        verify(exerciseTypeConverter).toResponseList(entities, ExerciseTypeResponse.class);
+        // === CHECK DB ===
+        assertNotNull(result);
+        assertTrue(result.stream().anyMatch(r -> r.getCode().equals("TEST_MULTIPLE_CHOICE")));
     }
 
+    // ==================== MAI-EXT-002 ====================
     @Test
-    void getExerciseTypes_shouldReturnEmptyListWhenNoEntityExists() {
-        // Test Case ID: MAI-ETS-003
-        when(exerciseTypeRepository.findAll()).thenReturn(Collections.emptyList());
-        when(exerciseTypeConverter.toResponseList(Collections.emptyList(), ExerciseTypeResponse.class))
-                .thenReturn(Collections.emptyList());
+    @DisplayName("MAI-EXT-002: getExerciseTypes - Kiểm tra tính đúng đắn của mapping dữ liệu")
+    void getExerciseTypes_VerifyDataMapping() {
+        // === DATA ===
+        setupExerciseTypes();
 
-        List<ExerciseTypeResponse> actual = exerciseTypeService.getExerciseTypes();
+        // === ACTION ===
+        List<ExerciseTypeResponse> result = exerciseTypeService.getExerciseTypes();
 
-        assertEquals(0, actual.size());
+        // === CHECK: Verify mapping trường code và description ===
+        ExerciseTypeResponse mc = result.stream()
+                .filter(r -> r.getCode().equals("TEST_MULTIPLE_CHOICE"))
+                .findFirst().get();
+        assertEquals("Chọn đáp án", mc.getDescription());
     }
+
 }

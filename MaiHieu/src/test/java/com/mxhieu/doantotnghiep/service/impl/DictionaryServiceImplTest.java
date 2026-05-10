@@ -1,101 +1,124 @@
 package com.mxhieu.doantotnghiep.service.impl;
 
 import com.mxhieu.doantotnghiep.dto.response.DictionaryResponse;
-import com.mxhieu.doantotnghiep.entity.DefinitionExampleEntity;
-import com.mxhieu.doantotnghiep.entity.DictionaryEntity;
-import com.mxhieu.doantotnghiep.entity.PartOfSpeechEntity;
-import com.mxhieu.doantotnghiep.repository.DefinitionExampleRepository;
-import com.mxhieu.doantotnghiep.repository.DictionaryRepository;
-import com.mxhieu.doantotnghiep.repository.PartOfSpeechRepository;
-import com.mxhieu.doantotnghiep.repository.StudentDictionaryRepository;
+import com.mxhieu.doantotnghiep.entity.*;
+import com.mxhieu.doantotnghiep.exception.AppException;
+import com.mxhieu.doantotnghiep.repository.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
+/**
+ * Integration Test cho DictionaryServiceImpl sử dụng MySQL.
+ *
+ * Nghiệp vụ: Tra cứu từ điển và quản lý từ vựng cá nhân (UC 2.3.x).
+ * - Tra cứu từ từ DB nếu đã tồn tại để tối ưu API calls.
+ * - Gợi ý từ (Autocomplete) dựa trên dữ liệu đã tra cứu.
+ * - Ràng buộc nhập liệu (Input Validation) cho từ khóa tra cứu.
+ *
+ * Liên kết System Test:
+ * - TD_VA_01: Kiểm tra ký tự đặc biệt.
+ * - TD_VA_03: Kiểm tra ký tự số.
+ *
+ * Cấu trúc test: DATA (MySQL) -> ACTION -> CHECK -> ROLLBACK.
+ */
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
 class DictionaryServiceImplTest {
 
-    @Mock
+    @Autowired
+    private DictionaryServiceImpl dictionaryService;
+
+    @Autowired
     private DictionaryRepository dictionaryRepository;
 
-    @Mock
-    private PartOfSpeechRepository partOfSpeechRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Mock
-    private DefinitionExampleRepository definitionExampleRepository;
+    @Autowired
+    private StudentProfileRepository studentProfileRepository;
 
-    @Mock
-    private StudentDictionaryRepository studentDictionaryRepository;
+    private StudentProfileEntity createStudent() {
+        UserEntity user = new UserEntity();
+        user.setEmail("std_dict_" + System.currentTimeMillis() + "@test.com");
+        user.setStatus("ACTIVE");
+        user = userRepository.save(user);
 
-    @Mock
-    private WebClient.Builder webClientBuilder;
-
-    @InjectMocks
-    private DictionaryServiceImpl service;
-
-    @Test
-    void getSuggestionWord_shouldReturnTopWords() {
-        // Test Case ID: MAI-DIC-001
-        when(dictionaryRepository.findTop10ByWordContainingIgnoreCase("ab"))
-                .thenReturn(List.of(
-                        DictionaryEntity.builder().word("about").build(),
-                        DictionaryEntity.builder().word("ability").build()
-                ));
-
-        List<String> result = service.getSuggestionWord("ab");
-
-        assertEquals(List.of("about", "ability"), result);
+        StudentProfileEntity student = new StudentProfileEntity();
+        student.setUser(user);
+        return studentProfileRepository.save(student);
     }
 
+    // ==================== MAI-DIC-001 ====================
     @Test
-    void search_shouldUseCachedDictionaryWhenWordExists() {
-        // Test Case ID: MAI-DIC-002
-        DictionaryEntity dictionary = DictionaryEntity.builder().id(1).word("focus").build();
-        PartOfSpeechEntity pos = PartOfSpeechEntity.builder()
-                .id(11)
-                .partOfSpeech("noun")
-                .ipa("/fo-kus/")
-                .audio("audio-url")
-                .dictionary(dictionary)
-                .build();
-        DefinitionExampleEntity def = DefinitionExampleEntity.builder()
-                .id(111)
-                .definition("ability to concentrate")
-                .example("Keep focus")
-                .partOfSpeech(pos)
-                .build();
-        pos.setDefinitionExample(List.of(def));
-        dictionary.setPartOfSpeech(List.of(pos));
+    @DisplayName("MAI-DIC-001: Tìm kiếm từ - Đã có trong DB -> Trả về từ DB (Không gọi API)")
+    void search_WordInDb_ShouldReturnFromDb() {
+        // === DATA ===
+        DictionaryEntity dictEntity = new DictionaryEntity();
+        dictEntity.setWord("integration");
+        dictEntity.setPartOfSpeech(new ArrayList<>());
+        dictionaryRepository.save(dictEntity);
 
-        when(dictionaryRepository.findByWord("focus")).thenReturn(Optional.of(dictionary));
-        when(studentDictionaryRepository.existsByStudentProfile_IdAndDefinitionExample_Id(9, 111)).thenReturn(true);
+        StudentProfileEntity student = createStudent();
 
-        DictionaryResponse response = service.search("focus", 9);
+        // === ACTION ===
+        DictionaryResponse response = dictionaryService.search("integration", student.getId());
 
-        assertEquals("focus", response.getWord());
-        assertEquals(1, response.getPartsOfSpeech().size());
-        assertEquals("noun", response.getPartsOfSpeech().get(0).getPartOfSpeech());
-        assertEquals(true, response.getPartsOfSpeech().get(0).getSenses().get(0).getSaved());
+        // === CHECK DB/DATA ===
+        assertNotNull(response);
+        assertEquals("integration", response.getWord());
+        // Ở mức integration, ta verify dữ liệu trả về đúng ID đã save trong DB
+        assertEquals(dictEntity.getId(), response.getId());
     }
 
+    // ==================== MAI-DIC-002 ====================
     @Test
-    void search_shouldReturnEmptyPartOfSpeechListWhenCachedEntityHasNoPartOfSpeech() {
-        // Test Case ID: MAI-DIC-003
-        DictionaryEntity dictionary = DictionaryEntity.builder().id(2).word("empty").partOfSpeech(List.of()).build();
-        when(dictionaryRepository.findByWord("empty")).thenReturn(Optional.of(dictionary));
+    @DisplayName("MAI-DIC-002: Tìm kiếm từ chứa số (TD_VA_03) - Phải ném ngoại lệ")
+    void search_WordWithNumbers_ShouldThrow() {
+        // === DATA ===
+        String word = "123";
 
-        DictionaryResponse response = service.search("empty", 1);
+        // === ACTION + CHECK ===
+        // Note: Nếu code chưa fix validation, test này sẽ FAIL (hoặc gọi API và fail tại API)
+        assertThrows(AppException.class, () -> dictionaryService.search(word, 1));
+    }
 
-        assertEquals("empty", response.getWord());
-        assertEquals(0, response.getPartsOfSpeech().size());
+    // ==================== MAI-DIC-003 ====================
+    @Test
+    @DisplayName("MAI-DIC-003: Tìm kiếm ký tự đặc biệt (TD_VA_01) - Phải ném ngoại lệ")
+    void search_WordWithSpecialChars_ShouldThrow() {
+        // === DATA ===
+        String word = "%^%";
+
+        // === ACTION + CHECK ===
+        assertThrows(AppException.class, () -> dictionaryService.search(word, 1));
+    }
+
+    // ==================== MAI-DIC-004 ====================
+    @Test
+    @DisplayName("MAI-DIC-004: Lấy danh sách gợi ý - Top 10 từ MySQL")
+    void getSuggestionWord_ShouldReturnList() {
+        // === DATA ===
+        DictionaryEntity d1 = new DictionaryEntity(); d1.setWord("apple");
+        DictionaryEntity d2 = new DictionaryEntity(); d2.setWord("application");
+        dictionaryRepository.save(d1);
+        dictionaryRepository.save(d2);
+
+        // === ACTION ===
+        List<String> result = dictionaryService.getSuggestionWord("app");
+
+        // === CHECK DB/DATA ===
+        assertTrue(result.size() >= 2);
+        assertTrue(result.contains("apple"));
+        assertTrue(result.contains("application"));
     }
 }
